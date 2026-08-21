@@ -1,8 +1,10 @@
 using AssetManagement.Core.Models;
 
-namespace AssetManagement.Core.Services;
-
-public interface ITokenService
+namespace AssetManagement.Core.Services
 {
-    (string token, long expiresAt) GenerateToken(UserEntity user, bool rememberMe = true);
+    public interface ITokenService
+    {
+        (string token, long expiresAt) GenerateToken(UserEntity user, bool rememberMe = true);
+    }
 }
+

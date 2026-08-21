@@ -6,51 +6,52 @@ using AssetManagement.Core.Services;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 
-namespace AssetManagement.Infrastructure.Services;
-
-public class TokenService : ITokenService
+namespace AssetManagement.Infrastructure.Services
 {
-    private readonly IConfiguration _configuration;
-
-    public TokenService(IConfiguration configuration)
+    public class TokenService : ITokenService
     {
-        _configuration = configuration;
-    }
+        private readonly IConfiguration _configuration;
 
-    public (string token, long expiresAt) GenerateToken(UserEntity user, bool rememberMe = true)
-    {
-        var secretKey = _configuration["JwtSettings:Secret"] 
-            ?? "SuperSecretKeyForAssetManagementJwtSigning2026!#$";
-        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey));
-        var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-
-        var durationDays = rememberMe ? 30 : 1;
-        var expiration = DateTime.UtcNow.AddDays(durationDays);
-        var expiresAtTimestamp = new DateTimeOffset(expiration).ToUnixTimeMilliseconds();
-
-        var claims = new[]
+        public TokenService(IConfiguration configuration)
         {
-            new Claim(JwtRegisteredClaimNames.Sub, user.Id),
-            new Claim(JwtRegisteredClaimNames.Name, user.Name),
-            new Claim(JwtRegisteredClaimNames.Email, user.Email),
-            new Claim("role", user.Role),
-            new Claim("provider", user.Provider),
-            new Claim("avatarUrl", user.AvatarUrl ?? string.Empty),
-            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
-        };
+            _configuration = configuration;
+        }
 
-        var tokenDescriptor = new SecurityTokenDescriptor
+        public (string token, long expiresAt) GenerateToken(UserEntity user, bool rememberMe = true)
         {
-            Subject = new ClaimsIdentity(claims),
-            Expires = expiration,
-            Issuer = _configuration["JwtSettings:Issuer"] ?? "AssetPulse.Api",
-            Audience = _configuration["JwtSettings:Audience"] ?? "AssetPulse.Client",
-            SigningCredentials = credentials
-        };
+            string secretKey = _configuration["JwtSettings:Secret"] 
+                ?? "SuperSecretKeyForAssetManagementJwtSigning2026!#$";
+            SymmetricSecurityKey key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey));
+            SigningCredentials credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
-        var tokenHandler = new JwtSecurityTokenHandler();
-        var token = tokenHandler.CreateToken(tokenDescriptor);
+            int durationDays = rememberMe ? 30 : 1;
+            DateTime expiration = DateTime.UtcNow.AddDays(durationDays);
+            long expiresAtTimestamp = new DateTimeOffset(expiration).ToUnixTimeMilliseconds();
 
-        return (tokenHandler.WriteToken(token), expiresAtTimestamp);
+            Claim[] claims = new[]
+            {
+                new Claim(JwtRegisteredClaimNames.Sub, user.Id),
+                new Claim(JwtRegisteredClaimNames.Name, user.Name),
+                new Claim(JwtRegisteredClaimNames.Email, user.Email),
+                new Claim("role", user.Role),
+                new Claim("provider", user.Provider),
+                new Claim("avatarUrl", user.AvatarUrl ?? string.Empty),
+                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+            };
+
+            SecurityTokenDescriptor tokenDescriptor = new SecurityTokenDescriptor
+            {
+                Subject = new ClaimsIdentity(claims),
+                Expires = expiration,
+                Issuer = _configuration["JwtSettings:Issuer"] ?? "AssetPulse.Api",
+                Audience = _configuration["JwtSettings:Audience"] ?? "AssetPulse.Client",
+                SigningCredentials = credentials
+            };
+
+            JwtSecurityTokenHandler tokenHandler = new JwtSecurityTokenHandler();
+            SecurityToken token = tokenHandler.CreateToken(tokenDescriptor);
+
+            return (tokenHandler.WriteToken(token), expiresAtTimestamp);
+        }
     }
 }

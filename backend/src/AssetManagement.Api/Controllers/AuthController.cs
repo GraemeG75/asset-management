@@ -4,133 +4,158 @@ using AssetManagement.Core.Models;
 using AssetManagement.Core.Services;
 using AssetManagement.Infrastructure.Data;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
-namespace AssetManagement.Api.Controllers;
-
-[ApiController]
-[Route("api/[controller]")]
-public class AuthController : ControllerBase
+namespace AssetManagement.Api.Controllers
 {
-    private readonly AppDbContext _dbContext;
-    private readonly ITokenService _tokenService;
-
-    public AuthController(AppDbContext dbContext, ITokenService tokenService)
-    {
-        _dbContext = dbContext;
-        _tokenService = tokenService;
-    }
-
     /// <summary>
-    /// Authenticates local user with email and password
+    /// Authentication &amp; Identity management endpoints
     /// </summary>
-    [HttpPost("login")]
-    public async Task<ActionResult<AuthResponseDto>> Login([FromBody] LoginRequestDto request)
+    [ApiController]
+    [Route("api/[controller]")]
+    [Produces("application/json")]
+    public class AuthController : ControllerBase
     {
-        if (string.IsNullOrWhiteSpace(request.Email))
+        private readonly AppDbContext _dbContext;
+        private readonly ITokenService _tokenService;
+
+        public AuthController(AppDbContext dbContext, ITokenService tokenService)
         {
-            return BadRequest(new { message = "Email is required" });
+            _dbContext = dbContext;
+            _tokenService = tokenService;
         }
 
-        var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.Email.ToLower() == request.Email.ToLower());
-
-        if (user == null)
+        /// <summary>
+        /// Authenticates local user with email and password
+        /// </summary>
+        /// <param name="request">User login credentials</param>
+        /// <returns>Auth payload containing JWT token and user profile</returns>
+        /// <response code="200">Successful authentication</response>
+        /// <response code="400">Email missing or invalid request</response>
+        /// <response code="401">Invalid credentials</response>
+        [HttpPost("login")]
+        [ProducesResponseType(typeof(AuthResponseDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        public async Task<IResult> Login([FromBody] LoginRequestDto request)
         {
-            var isManager = request.Email.Contains("admin") || request.Email.Contains("manager");
-            var isAdmin = request.Email.Contains("admin");
-            var role = isAdmin ? "admin" : (isManager ? "manager" : "user");
-            var name = request.Email.Split('@')[0].Replace('.', ' ');
-
-            user = new UserEntity
+            if (string.IsNullOrWhiteSpace(request.Email))
             {
-                Name = System.Globalization.CultureInfo.CurrentCulture.TextInfo.ToTitleCase(name),
-                Email = request.Email.ToLower(),
-                PasswordHash = request.Password ?? "password123",
-                Role = role,
-                Provider = "local",
-                AvatarUrl = $"https://api.dicebear.com/7.x/bottts/svg?seed={Uri.EscapeDataString(request.Email)}"
+                return TypedResults.BadRequest(new { message = "Email is required" });
+            }
+
+            UserEntity? user = await _dbContext.Users.FirstOrDefaultAsync(u => u.Email.ToLower() == request.Email.ToLower());
+
+            if (user == null)
+            {
+                bool isManager = request.Email.Contains("admin") || request.Email.Contains("manager");
+                bool isAdmin = request.Email.Contains("admin");
+                string role = isAdmin ? "admin" : (isManager ? "manager" : "user");
+                string name = request.Email.Split('@')[0].Replace('.', ' ');
+
+                user = new UserEntity
+                {
+                    Name = System.Globalization.CultureInfo.CurrentCulture.TextInfo.ToTitleCase(name),
+                    Email = request.Email.ToLower(),
+                    PasswordHash = request.Password ?? "password123",
+                    Role = role,
+                    Provider = "local",
+                    AvatarUrl = $"https://api.dicebear.com/7.x/bottts/svg?seed={Uri.EscapeDataString(request.Email)}"
+                };
+
+                _dbContext.Users.Add(user);
+                await _dbContext.SaveChangesAsync();
+            }
+            else if (!string.IsNullOrEmpty(user.PasswordHash) && !string.IsNullOrEmpty(request.Password) && user.PasswordHash != request.Password)
+            {
+                return TypedResults.Unauthorized();
+            }
+
+            (string token, long expiresAt) = _tokenService.GenerateToken(user, request.RememberMe);
+            UserDto userDto = MapToUserDto(user);
+
+            return TypedResults.Ok(new AuthResponseDto(userDto, token, expiresAt));
+        }
+
+        /// <summary>
+        /// Authenticates user via Single Sign-On (Google, Azure, GitHub)
+        /// </summary>
+        /// <param name="request">SSO provider selection</param>
+        /// <returns>Auth payload containing JWT token and user profile</returns>
+        /// <response code="200">Successful SSO authentication</response>
+        [HttpPost("sso-login")]
+        [ProducesResponseType(typeof(AuthResponseDto), StatusCodes.Status200OK)]
+        public async Task<IResult> SsoLogin([FromBody] SsoLoginRequestDto request)
+        {
+            string provider = request.Provider.ToLower();
+            Dictionary<string, string> providerEmails = new Dictionary<string, string>
+            {
+                ["google"] = "alex.dev@gmail.com",
+                ["azure"] = "sarah.corp@microsoft.com",
+                ["github"] = "octocat.lead@github.com"
             };
 
-            _dbContext.Users.Add(user);
-            await _dbContext.SaveChangesAsync();
-        }
-        else if (!string.IsNullOrEmpty(user.PasswordHash) && !string.IsNullOrEmpty(request.Password) && user.PasswordHash != request.Password)
-        {
-            return Unauthorized(new { message = "Invalid email or password" });
-        }
+            string email = providerEmails.GetValueOrDefault(provider, $"user.{provider}@sso-provider.io")!;
+            UserEntity? user = await _dbContext.Users.FirstOrDefaultAsync(u => u.Email.ToLower() == email.ToLower());
 
-        var (token, expiresAt) = _tokenService.GenerateToken(user, request.RememberMe);
-        var userDto = MapToUserDto(user);
-
-        return Ok(new AuthResponseDto(userDto, token, expiresAt));
-    }
-
-    /// <summary>
-    /// Authenticates user via Single Sign-On (Google, Azure, GitHub)
-    /// </summary>
-    [HttpPost("sso-login")]
-    public async Task<ActionResult<AuthResponseDto>> SsoLogin([FromBody] SsoLoginRequestDto request)
-    {
-        var provider = request.Provider.ToLower();
-        var providerEmails = new Dictionary<string, string>
-        {
-            ["google"] = "alex.dev@gmail.com",
-            ["azure"] = "sarah.corp@microsoft.com",
-            ["github"] = "octocat.lead@github.com"
-        };
-
-        var email = providerEmails.GetValueOrDefault(provider, $"user.{provider}@sso-provider.io");
-        var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.Email.ToLower() == email.ToLower());
-
-        if (user == null)
-        {
-            var isManager = email.Contains("admin") || email.Contains("corp") || email.Contains("microsoft");
-            var isAdmin = email.Contains("admin");
-            var role = isAdmin ? "admin" : (isManager ? "manager" : "user");
-            var name = email.Split('@')[0].Replace('.', ' ');
-
-            user = new UserEntity
+            if (user == null)
             {
-                Name = System.Globalization.CultureInfo.CurrentCulture.TextInfo.ToTitleCase(name),
-                Email = email.ToLower(),
-                Role = role,
-                Provider = provider,
-                AvatarUrl = $"https://api.dicebear.com/7.x/bottts/svg?seed={Uri.EscapeDataString(email)}"
-            };
+                bool isManager = email.Contains("admin") || email.Contains("corp") || email.Contains("microsoft");
+                bool isAdmin = email.Contains("admin");
+                string role = isAdmin ? "admin" : (isManager ? "manager" : "user");
+                string name = email.Split('@')[0].Replace('.', ' ');
 
-            _dbContext.Users.Add(user);
-            await _dbContext.SaveChangesAsync();
+                user = new UserEntity
+                {
+                    Name = System.Globalization.CultureInfo.CurrentCulture.TextInfo.ToTitleCase(name),
+                    Email = email.ToLower(),
+                    Role = role,
+                    Provider = provider,
+                    AvatarUrl = $"https://api.dicebear.com/7.x/bottts/svg?seed={Uri.EscapeDataString(email)}"
+                };
+
+                _dbContext.Users.Add(user);
+                await _dbContext.SaveChangesAsync();
+            }
+
+            (string token, long expiresAt) = _tokenService.GenerateToken(user, request.RememberMe);
+            UserDto userDto = MapToUserDto(user);
+
+            return TypedResults.Ok(new AuthResponseDto(userDto, token, expiresAt));
         }
 
-        var (token, expiresAt) = _tokenService.GenerateToken(user, request.RememberMe);
-        var userDto = MapToUserDto(user);
-
-        return Ok(new AuthResponseDto(userDto, token, expiresAt));
-    }
-
-    /// <summary>
-    /// Returns current authenticated user profile
-    /// </summary>
-    [Authorize]
-    [HttpGet("me")]
-    public async Task<ActionResult<UserDto>> GetCurrentUser()
-    {
-        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        if (string.IsNullOrEmpty(userId))
+        /// <summary>
+        /// Returns current authenticated user profile
+        /// </summary>
+        /// <returns>User profile DTO</returns>
+        /// <response code="200">User profile retrieved</response>
+        /// <response code="401">Unauthorized</response>
+        /// <response code="404">User profile not found</response>
+        [Authorize]
+        [HttpGet("me")]
+        [ProducesResponseType(typeof(UserDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IResult> GetCurrentUser()
         {
-            return Unauthorized();
+            string? userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+            {
+                return TypedResults.Unauthorized();
+            }
+
+            UserEntity? user = await _dbContext.Users.FindAsync(userId);
+            if (user == null)
+            {
+                return TypedResults.NotFound();
+            }
+
+            return TypedResults.Ok(MapToUserDto(user));
         }
 
-        var user = await _dbContext.Users.FindAsync(userId);
-        if (user == null)
-        {
-            return NotFound();
-        }
-
-        return Ok(MapToUserDto(user));
+        private static UserDto MapToUserDto(UserEntity user) =>
+            new UserDto(user.Id, user.Name, user.Email, user.Role, user.Provider, user.AvatarUrl, user.CreatedAt);
     }
-
-    private static UserDto MapToUserDto(UserEntity user) =>
-        new UserDto(user.Id, user.Name, user.Email, user.Role, user.Provider, user.AvatarUrl, user.CreatedAt);
 }
