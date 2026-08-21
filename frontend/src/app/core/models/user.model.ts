@@ -1,8 +1,18 @@
+export type SsoProviderId = 'google' | 'azure' | 'github';
+
+export interface SsoProvider {
+  id: SsoProviderId;
+  name: string;
+  icon: string;
+  color: string;
+}
+
 export interface User {
   id: string;
   name: string;
   email: string;
   role: 'admin' | 'manager' | 'user';
+  provider?: 'local' | SsoProviderId;
   avatarUrl?: string;
   createdAt?: string;
 }
@@ -33,6 +43,7 @@ export interface JwtPayload {
   name: string;
   email: string;
   role: 'admin' | 'manager' | 'user';
+  provider?: 'local' | SsoProviderId;
   avatarUrl?: string;
   iat: number;
   exp: number;

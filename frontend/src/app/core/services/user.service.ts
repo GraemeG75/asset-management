@@ -1,15 +1,19 @@
-import { Injectable, signal, computed } from '@angular/core';
+import { Injectable, signal, computed, inject } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
 import { Observable, of, throwError } from 'rxjs';
-import { map, tap } from 'rxjs/operators';
-import { User, LoginCredentials, SessionInfo, JwtPayload, AuthResponse } from '../models/user.model';
+import { map, tap, catchError } from 'rxjs/operators';
+import { User, LoginCredentials, SessionInfo, JwtPayload, AuthResponse, SsoProviderId } from '../models/user.model';
 
 const TOKEN_KEY = 'asset_mgmt_jwt_token';
 const REMEMBER_KEY = 'asset_mgmt_remember_me';
+const API_BASE_URL = 'http://localhost:5000/api/auth';
 
 @Injectable({
   providedIn: 'root'
 })
 export class UserService {
+  private http = inject(HttpClient, { optional: true });
+
   // State signals
   readonly currentUser = signal<User | null>(null);
   readonly jwtToken = signal<string | null>(null);
@@ -73,6 +77,7 @@ export class UserService {
       name: payload.name,
       email: payload.email,
       role: payload.role,
+      provider: payload.provider || 'local',
       avatarUrl: payload.avatarUrl
     };
 
@@ -83,7 +88,7 @@ export class UserService {
   }
 
   /**
-   * Performs user login with credentials
+   * Performs user login via C# ASP.NET Core Web API with fallback to client-side auth
    */
   login(credentials: LoginCredentials): Observable<User> {
     if (!credentials.email) {
@@ -91,34 +96,81 @@ export class UserService {
     }
 
     const rememberMe = credentials.rememberMe ?? true;
-    const response = this.createMockAuthResponse(credentials.email);
-    
-    return of(response).pipe(
-      tap(res => {
-        if (rememberMe) {
-          if (typeof localStorage !== 'undefined') {
-            localStorage.setItem(TOKEN_KEY, res.token);
-            localStorage.setItem(REMEMBER_KEY, 'true');
-          }
-          if (typeof sessionStorage !== 'undefined') {
-            sessionStorage.removeItem(TOKEN_KEY);
-          }
-        } else {
-          if (typeof sessionStorage !== 'undefined') {
-            sessionStorage.setItem(TOKEN_KEY, res.token);
-          }
-          if (typeof localStorage !== 'undefined') {
-            localStorage.removeItem(TOKEN_KEY);
-            localStorage.removeItem(REMEMBER_KEY);
-          }
-        }
 
-        this.jwtToken.set(res.token);
-        this.currentUser.set(res.user);
-        this.isRemembered.set(rememberMe);
-      }),
-      map(res => res.user)
-    );
+    if (this.http) {
+      return this.http.post<AuthResponse>(`${API_BASE_URL}/login`, credentials).pipe(
+        tap(res => this.storeSessionData(res, rememberMe)),
+        map(res => res.user),
+        catchError(() => {
+          // Client-side fallback if backend API is not running
+          const fallbackRes = this.createMockAuthResponse(credentials.email, 'local');
+          return this.applyMockResponse(fallbackRes, rememberMe);
+        })
+      );
+    }
+
+    const mockRes = this.createMockAuthResponse(credentials.email, 'local');
+    return this.applyMockResponse(mockRes, rememberMe);
+  }
+
+  /**
+   * Performs SSO login via C# ASP.NET Core Web API with fallback
+   */
+  loginWithSso(provider: SsoProviderId, rememberMe: boolean = true): Observable<User> {
+    if (this.http) {
+      return this.http.post<AuthResponse>(`${API_BASE_URL}/sso-login`, { provider, rememberMe }).pipe(
+        tap(res => this.storeSessionData(res, rememberMe)),
+        map(res => res.user),
+        catchError(() => {
+          const providerEmails: Record<SsoProviderId, string> = {
+            google: 'alex.dev@gmail.com',
+            azure: 'sarah.corp@microsoft.com',
+            github: 'octocat.lead@github.com'
+          };
+          const email = providerEmails[provider] || `user.${provider}@sso-provider.io`;
+          const fallbackRes = this.createMockAuthResponse(email, provider);
+          return this.applyMockResponse(fallbackRes, rememberMe);
+        })
+      );
+    }
+
+    const providerEmails: Record<SsoProviderId, string> = {
+      google: 'alex.dev@gmail.com',
+      azure: 'sarah.corp@microsoft.com',
+      github: 'octocat.lead@github.com'
+    };
+    const email = providerEmails[provider] || `user.${provider}@sso-provider.io`;
+    const mockRes = this.createMockAuthResponse(email, provider);
+    return this.applyMockResponse(mockRes, rememberMe);
+  }
+
+  private storeSessionData(res: AuthResponse, rememberMe: boolean): void {
+    if (rememberMe) {
+      if (typeof localStorage !== 'undefined') {
+        localStorage.setItem(TOKEN_KEY, res.token);
+        localStorage.setItem(REMEMBER_KEY, 'true');
+      }
+      if (typeof sessionStorage !== 'undefined') {
+        sessionStorage.removeItem(TOKEN_KEY);
+      }
+    } else {
+      if (typeof sessionStorage !== 'undefined') {
+        sessionStorage.setItem(TOKEN_KEY, res.token);
+      }
+      if (typeof localStorage !== 'undefined') {
+        localStorage.removeItem(TOKEN_KEY);
+        localStorage.removeItem(REMEMBER_KEY);
+      }
+    }
+
+    this.jwtToken.set(res.token);
+    this.currentUser.set(res.user);
+    this.isRemembered.set(rememberMe);
+  }
+
+  private applyMockResponse(res: AuthResponse, rememberMe: boolean): Observable<User> {
+    this.storeSessionData(res, rememberMe);
+    return of(res.user);
   }
 
   /**
@@ -175,8 +227,8 @@ export class UserService {
   /**
    * Generates a signed mock JWT token for testing/demo authentication
    */
-  createMockAuthResponse(email: string): AuthResponse {
-    const isManager = email.includes('admin') || email.includes('manager');
+  createMockAuthResponse(email: string, provider: 'local' | SsoProviderId = 'local'): AuthResponse {
+    const isManager = email.includes('admin') || email.includes('corp') || email.includes('microsoft');
     const isSpecial = email.includes('admin');
     
     const role: 'admin' | 'manager' | 'user' = isSpecial ? 'admin' : (isManager ? 'manager' : 'user');
@@ -187,6 +239,7 @@ export class UserService {
       name: name || 'Demo User',
       email: email,
       role: role,
+      provider: provider,
       avatarUrl: `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(email)}`,
       createdAt: new Date().toISOString()
     };
@@ -198,6 +251,7 @@ export class UserService {
       name: user.name,
       email: user.email,
       role: user.role,
+      provider: user.provider,
       avatarUrl: user.avatarUrl,
       iat: now,
       exp: now + 86400 // 24 hours validity

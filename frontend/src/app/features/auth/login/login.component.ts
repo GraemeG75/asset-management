@@ -8,6 +8,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { UserService } from '../../../core/services/user.service';
+import { SsoProviderId } from '../../../core/models/user.model';
 
 @Component({
   selector: 'app-login',
@@ -37,6 +38,7 @@ export class LoginComponent implements OnInit {
   });
 
   isLoading = signal(false);
+  activeSsoProvider = signal<SsoProviderId | null>(null);
   errorMessage = signal<string | null>(null);
   hidePassword = signal(true);
 
@@ -61,15 +63,40 @@ export class LoginComponent implements OnInit {
     this.userService.login({ email, password, rememberMe }).subscribe({
       next: () => {
         this.isLoading.set(false);
-        const returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/';
-        const target = (returnUrl === '/login') ? '/' : returnUrl;
-        this.router.navigateByUrl(target);
+        this.navigateAfterLogin();
       },
       error: (err) => {
         this.isLoading.set(false);
         this.errorMessage.set(err.message || 'Authentication failed. Please check your credentials.');
       }
     });
+  }
+
+  onSsoLogin(provider: SsoProviderId): void {
+    this.isLoading.set(true);
+    this.activeSsoProvider.set(provider);
+    this.errorMessage.set(null);
+
+    const rememberMe = this.loginForm.get('rememberMe')?.value ?? true;
+
+    this.userService.loginWithSso(provider, rememberMe).subscribe({
+      next: () => {
+        this.isLoading.set(false);
+        this.activeSsoProvider.set(null);
+        this.navigateAfterLogin();
+      },
+      error: (err) => {
+        this.isLoading.set(false);
+        this.activeSsoProvider.set(null);
+        this.errorMessage.set(err.message || `SSO login with ${provider} failed. Please try again.`);
+      }
+    });
+  }
+
+  private navigateAfterLogin(): void {
+    const returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/';
+    const target = (returnUrl === '/login') ? '/' : returnUrl;
+    this.router.navigateByUrl(target);
   }
 
   togglePasswordVisibility(): void {

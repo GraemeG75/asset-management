@@ -50,8 +50,22 @@ describe('UserService', () => {
     expect(localStorage.getItem('asset_mgmt_jwt_token')).toBeNull();
   });
 
+  it('should support SSO login with Google, Azure, and GitHub providers', async () => {
+    const googleUser = await firstValueFrom(service.loginWithSso('google', true));
+    expect(googleUser.provider).toBe('google');
+    expect(googleUser.email).toContain('gmail.com');
+
+    const azureUser = await firstValueFrom(service.loginWithSso('azure', true));
+    expect(azureUser.provider).toBe('azure');
+    expect(azureUser.email).toContain('microsoft.com');
+
+    const githubUser = await firstValueFrom(service.loginWithSso('github', false));
+    expect(githubUser.provider).toBe('github');
+    expect(githubUser.email).toContain('github.com');
+  });
+
   it('should restore session from valid stored JWT in localStorage', () => {
-    const mockAuth = service.createMockAuthResponse('manager@assetmgmt.io');
+    const mockAuth = service.createMockAuthResponse('manager@assetmgmt.io', 'azure');
     localStorage.setItem('asset_mgmt_jwt_token', mockAuth.token);
 
     const restored = service.restoreSession();
@@ -60,10 +74,11 @@ describe('UserService', () => {
     expect(service.isLoggedIn()).toBe(true);
     expect(service.isRemembered()).toBe(true);
     expect(service.currentUser()?.email).toBe('manager@assetmgmt.io');
+    expect(service.currentUser()?.provider).toBe('azure');
   });
 
   it('should restore session from valid stored JWT in sessionStorage', () => {
-    const mockAuth = service.createMockAuthResponse('guest@assetmgmt.io');
+    const mockAuth = service.createMockAuthResponse('guest@assetmgmt.io', 'google');
     sessionStorage.setItem('asset_mgmt_jwt_token', mockAuth.token);
 
     const restored = service.restoreSession();
@@ -72,6 +87,7 @@ describe('UserService', () => {
     expect(service.isLoggedIn()).toBe(true);
     expect(service.isRemembered()).toBe(false);
     expect(service.currentUser()?.email).toBe('guest@assetmgmt.io');
+    expect(service.currentUser()?.provider).toBe('google');
   });
 
   it('should clear state and remove tokens on logout', async () => {

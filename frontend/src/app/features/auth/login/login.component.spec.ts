@@ -15,7 +15,8 @@ describe('LoginComponent', () => {
   beforeEach(async () => {
     userServiceMock = {
       isLoggedIn: vi.fn().mockReturnValue(false),
-      login: vi.fn()
+      login: vi.fn(),
+      loginWithSso: vi.fn()
     };
     routerMock = {
       navigateByUrl: vi.fn()
@@ -62,6 +63,15 @@ describe('LoginComponent', () => {
     component.onSubmit();
 
     expect(userServiceMock.login).toHaveBeenCalledWith({ email: 'admin@assetmgmt.io', password: 'password123', rememberMe: true });
+    expect(routerMock.navigateByUrl).toHaveBeenCalledWith('/dashboard');
+  });
+
+  it('should trigger SSO login and navigate on success', () => {
+    userServiceMock.loginWithSso.mockReturnValue(of({ email: 'alex.dev@gmail.com', provider: 'google' }));
+
+    component.onSsoLogin('google');
+
+    expect(userServiceMock.loginWithSso).toHaveBeenCalledWith('google', true);
     expect(routerMock.navigateByUrl).toHaveBeenCalledWith('/dashboard');
   });
 
