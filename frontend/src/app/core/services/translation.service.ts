@@ -2,6 +2,7 @@ import { Injectable, signal, computed, inject, effect } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { catchError, of, tap } from 'rxjs';
 import { UserService } from './user.service';
+import { ApiService } from './api.service';
 
 export interface TranslationResponse {
   culture: string;
@@ -193,6 +194,7 @@ const MULTI_AUTH_DICTIONARIES: Record<string, Record<string, string>> = {
   providedIn: 'root'
 })
 export class TranslationService {
+  private apiService = inject(ApiService, { optional: true });
   private http = inject(HttpClient, { optional: true });
   private userService = inject(UserService);
 
@@ -236,13 +238,17 @@ export class TranslationService {
   }
 
   /**
-   * Fetches public translation dictionary from /api/translations/public
+   * Fetches public translation dictionary from /api/translations/public via ApiService
    */
   loadPublicTranslations(culture: string = this.currentCulture()): void {
     const fallback = MULTI_PUBLIC_DICTIONARIES[culture] || MULTI_PUBLIC_DICTIONARIES['en'];
+    const url = `${API_BASE_URL}/public?culture=${culture}`;
+    const request$ = this.apiService 
+      ? this.apiService.get<TranslationResponse>(url, { blockUi: false })
+      : (this.http ? this.http.get<TranslationResponse>(url) : null);
 
-    if (this.http) {
-      this.http.get<TranslationResponse>(`${API_BASE_URL}/public?culture=${culture}`).pipe(
+    if (request$) {
+      request$.pipe(
         tap(res => {
           this.translations.set({ ...fallback, ...res.translations });
           this.currentCulture.set(res.culture);
@@ -258,7 +264,7 @@ export class TranslationService {
   }
 
   /**
-   * Fetches authenticated translation dictionary from /api/translations/authenticated
+   * Fetches authenticated translation dictionary from /api/translations/authenticated via ApiService
    */
   loadAuthenticatedTranslations(culture: string = this.currentCulture()): void {
     const token = this.userService.jwtToken();
@@ -268,8 +274,13 @@ export class TranslationService {
       headers = headers.set('Authorization', `Bearer ${token}`);
     }
 
-    if (this.http) {
-      this.http.get<TranslationResponse>(`${API_BASE_URL}/authenticated?culture=${culture}`, { headers }).pipe(
+    const url = `${API_BASE_URL}/authenticated?culture=${culture}`;
+    const request$ = this.apiService
+      ? this.apiService.get<TranslationResponse>(url, { headers, blockUi: false })
+      : (this.http ? this.http.get<TranslationResponse>(url, { headers }) : null);
+
+    if (request$) {
+      request$.pipe(
         tap(res => {
           this.translations.update(current => ({
             ...current,

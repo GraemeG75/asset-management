@@ -5,6 +5,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
 import { UserService } from './core/services/user.service';
+import { UiBlockerComponent } from './core/components/ui-blocker/ui-blocker.component';
 
 @Component({
   selector: 'app-root',
@@ -14,7 +15,8 @@ import { UserService } from './core/services/user.service';
     RouterOutlet,
     MatButtonModule,
     MatIconModule,
-    MatMenuModule
+    MatMenuModule,
+    UiBlockerComponent
   ],
   templateUrl: './app.html',
   styleUrl: './app.css'

@@ -1,0 +1,10 @@
+@if (isBlocked) {
+  <div class="ui-blocker-overlay fade-in" aria-live="assertive" role="alert" aria-busy="true">
+    <div class="blocker-content">
+      <div class="spinner-wrapper">
+        <mat-spinner diameter="48" mode="indeterminate" class="blocker-spinner"></mat-spinner>
+      </div>
+      <span class="blocker-text">Processing request...</span>
+    </div>
+  </div>
+}
