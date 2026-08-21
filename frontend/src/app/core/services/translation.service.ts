@@ -1,21 +1,14 @@
-import { Injectable, signal, computed, inject, effect } from '@angular/core';
+import { Injectable, signal, computed, inject, effect, untracked } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { catchError, of, tap } from 'rxjs';
+import { catchError, of, tap, finalize } from 'rxjs';
 import { UserService } from './user.service';
-import { ApiService } from './api.service';
-
-export interface TranslationResponse {
-  culture: string;
-  translations: Record<string, string>;
-}
+import { ApiService, TranslationResponse } from './api.service';
 
 export interface LanguageOption {
   code: string;
   name: string;
   flag: string;
 }
-
-const API_BASE_URL = 'http://localhost:5000/api/translations';
 
 export const AVAILABLE_LANGUAGES: LanguageOption[] = [
   { code: 'en', name: 'English', flag: '🇺🇸' },
@@ -162,7 +155,7 @@ const MULTI_AUTH_DICTIONARIES: Record<string, Record<string, string>> = {
     'NAV_SETTINGS': 'Paramètres',
     'NAV_LOGOUT': 'Se déconnecter',
     'USER_PROFILE': 'Profil utilisateur',
-    'ROLE_ADMIN': 'Administrateur',
+    'ROLE_ADMIN': 'Administateur',
     'ROLE_MANAGER': "Gestionnaire d'actifs",
     'ROLE_USER': 'Utilisateur standard',
     'WELCOME_BACK': 'Bon retour',
@@ -202,26 +195,27 @@ export class TranslationService {
   readonly translations = signal<Record<string, string>>(MULTI_PUBLIC_DICTIONARIES['en']);
   readonly availableLanguages = AVAILABLE_LANGUAGES;
 
-  constructor() {
-    this.loadPublicTranslations();
+  private activeFetchKey: string | null = null;
 
+  constructor() {
     // Automatically synchronize language with authenticated user profile or initial login
     effect(() => {
       const user = typeof this.userService.currentUser === 'function' ? this.userService.currentUser() : null;
       const isLoggedIn = typeof this.userService.isLoggedIn === 'function' ? this.userService.isLoggedIn() : false;
+      const activeCulture = untracked(() => this.currentCulture());
 
-      if (user && user.preferredLanguage && user.preferredLanguage !== this.currentCulture()) {
+      if (user && user.preferredLanguage && user.preferredLanguage !== activeCulture) {
         this.setCulture(user.preferredLanguage);
       } else if (isLoggedIn) {
-        this.loadAuthenticatedTranslations(this.currentCulture());
+        this.loadAuthenticatedTranslations(activeCulture);
       } else {
-        this.loadPublicTranslations(this.currentCulture());
+        this.loadPublicTranslations(activeCulture);
       }
     });
   }
 
   /**
-   * Sets active culture and reloads appropriate translation dictionary
+   * Sets active culture and reloads appropriate translation dictionary with UI blocking
    */
   setCulture(culture: string): void {
     if (!culture) return;
@@ -238,14 +232,19 @@ export class TranslationService {
   }
 
   /**
-   * Fetches public translation dictionary from /api/translations/public via ApiService
+   * Fetches public translation dictionary from /api/translations/public via ApiService with UI blocking
    */
   loadPublicTranslations(culture: string = this.currentCulture()): void {
-    const fallback = MULTI_PUBLIC_DICTIONARIES[culture] || MULTI_PUBLIC_DICTIONARIES['en'];
-    const url = `${API_BASE_URL}/public?culture=${culture}`;
-    const request$ = this.apiService 
-      ? this.apiService.get<TranslationResponse>(url, { blockUi: false })
-      : (this.http ? this.http.get<TranslationResponse>(url) : null);
+    const normalizedCulture = culture.toLowerCase();
+    const fetchKey = `public_${normalizedCulture}`;
+    if (this.activeFetchKey === fetchKey) {
+      return;
+    }
+
+    const fallback = MULTI_PUBLIC_DICTIONARIES[normalizedCulture] || MULTI_PUBLIC_DICTIONARIES['en'];
+    this.activeFetchKey = fetchKey;
+
+    const request$ = this.apiService?.getPublicTranslations(normalizedCulture, { blockUi: true });
 
     if (request$) {
       request$.pipe(
@@ -256,28 +255,37 @@ export class TranslationService {
         catchError(() => {
           this.translations.set(fallback);
           return of(null);
+        }),
+        finalize(() => {
+          this.activeFetchKey = null;
         })
       ).subscribe();
     } else {
       this.translations.set(fallback);
+      this.activeFetchKey = null;
     }
   }
 
   /**
-   * Fetches authenticated translation dictionary from /api/translations/authenticated via ApiService
+   * Fetches authenticated translation dictionary from /api/translations/authenticated via ApiService with UI blocking
    */
   loadAuthenticatedTranslations(culture: string = this.currentCulture()): void {
+    const normalizedCulture = culture.toLowerCase();
+    const fetchKey = `auth_${normalizedCulture}`;
+    if (this.activeFetchKey === fetchKey) {
+      return;
+    }
+
     const token = this.userService.jwtToken();
-    const fallbackAuth = MULTI_AUTH_DICTIONARIES[culture] || MULTI_AUTH_DICTIONARIES['en'];
+    const fallbackAuth = MULTI_AUTH_DICTIONARIES[normalizedCulture] || MULTI_AUTH_DICTIONARIES['en'];
     let headers = new HttpHeaders();
     if (token) {
       headers = headers.set('Authorization', `Bearer ${token}`);
     }
 
-    const url = `${API_BASE_URL}/authenticated?culture=${culture}`;
-    const request$ = this.apiService
-      ? this.apiService.get<TranslationResponse>(url, { headers, blockUi: false })
-      : (this.http ? this.http.get<TranslationResponse>(url, { headers }) : null);
+    this.activeFetchKey = fetchKey;
+
+    const request$ = this.apiService?.getAuthenticatedTranslations(normalizedCulture, { headers, blockUi: true });
 
     if (request$) {
       request$.pipe(
@@ -292,10 +300,14 @@ export class TranslationService {
         catchError(() => {
           this.translations.update(current => ({ ...current, ...fallbackAuth }));
           return of(null);
+        }),
+        finalize(() => {
+          this.activeFetchKey = null;
         })
       ).subscribe();
     } else {
       this.translations.update(current => ({ ...current, ...fallbackAuth }));
+      this.activeFetchKey = null;
     }
   }
 

@@ -2,13 +2,11 @@ import { Injectable, signal, computed, inject } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, of, throwError } from 'rxjs';
 import { map, tap, catchError } from 'rxjs/operators';
-import { User, LoginCredentials, SessionInfo, JwtPayload, AuthResponse, SsoProviderId, UpdateProfileRequest, UpdateEmailRequest } from '../models/user.model';
+import { User, LoginCredentials, SessionInfo, JwtPayload, AuthResponse, SsoProviderId, UpdateProfileRequest } from '../models/user.model';
 import { ApiService } from './api.service';
 
 const TOKEN_KEY = 'asset_mgmt_jwt_token';
 const REMEMBER_KEY = 'asset_mgmt_remember_me';
-const API_BASE_URL = 'http://localhost:5000/api/auth';
-const PROFILE_API_URL = 'http://localhost:5000/api/profile';
 
 @Injectable({
   providedIn: 'root'
@@ -90,9 +88,7 @@ export class UserService {
     }
 
     const rememberMe = credentials.rememberMe ?? true;
-    const request$ = this.apiService 
-      ? this.apiService.post<AuthResponse>(`${API_BASE_URL}/login`, credentials)
-      : (this.http ? this.http.post<AuthResponse>(`${API_BASE_URL}/login`, credentials) : null);
+    const request$ = this.apiService?.login(credentials);
 
     if (request$) {
       return request$.pipe(
@@ -113,9 +109,7 @@ export class UserService {
    * Performs SSO login via ApiService with fallback
    */
   loginWithSso(provider: SsoProviderId, rememberMe: boolean = true): Observable<User> {
-    const request$ = this.apiService
-      ? this.apiService.post<AuthResponse>(`${API_BASE_URL}/sso-login`, { provider, rememberMe })
-      : (this.http ? this.http.post<AuthResponse>(`${API_BASE_URL}/sso-login`, { provider, rememberMe }) : null);
+    const request$ = this.apiService?.loginWithSso(provider, rememberMe);
 
     if (request$) {
       return request$.pipe(
@@ -189,9 +183,7 @@ export class UserService {
       headers = headers.set('Authorization', `Bearer ${token}`);
     }
 
-    const request$ = this.apiService
-      ? this.apiService.put<User>(`${PROFILE_API_URL}/language`, { language }, { headers })
-      : (this.http ? this.http.put<User>(`${PROFILE_API_URL}/language`, { language }, { headers }) : null);
+    const request$ = this.apiService?.updateLanguage(language, { headers });
 
     if (request$) {
       return request$.pipe(
@@ -219,9 +211,7 @@ export class UserService {
       headers = headers.set('Authorization', `Bearer ${token}`);
     }
 
-    const request$ = this.apiService
-      ? this.apiService.put<User>(PROFILE_API_URL, profile, { headers })
-      : (this.http ? this.http.put<User>(PROFILE_API_URL, profile, { headers }) : null);
+    const request$ = this.apiService?.updateProfile(profile, { headers });
 
     if (request$) {
       return request$.pipe(
@@ -261,9 +251,7 @@ export class UserService {
       headers = headers.set('Authorization', `Bearer ${token}`);
     }
 
-    const request$ = this.apiService
-      ? this.apiService.put<User>(`${PROFILE_API_URL}/email`, { newEmail }, { headers })
-      : (this.http ? this.http.put<User>(`${PROFILE_API_URL}/email`, { newEmail }, { headers }) : null);
+    const request$ = this.apiService?.updateEmail(newEmail, { headers });
 
     if (request$) {
       return request$.pipe(
