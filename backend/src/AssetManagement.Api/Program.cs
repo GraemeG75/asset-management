@@ -57,6 +57,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 
 // Register Services from Infrastructure
 builder.Services.AddScoped<ITokenService, TokenService>();
+builder.Services.AddScoped<ITranslationService, TranslationService>();
 
 // Configure JWT Authentication
 string secretKey = builder.Configuration["JwtSettings:Secret"] 
