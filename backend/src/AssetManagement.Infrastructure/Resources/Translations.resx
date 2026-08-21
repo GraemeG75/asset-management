@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="0" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+
+  <!-- PUBLIC TRANSLATIONS -->
+  <data name="APP_TITLE" xml:space="preserve"><value>AssetPulse</value></data>
+  <data name="LOGIN_TITLE" xml:space="preserve"><value>Sign in to AssetPulse</value></data>
+  <data name="LOGIN_SUBTITLE" xml:space="preserve"><value>Manage enterprise assets, track inventory, and access platform features.</value></data>
+  <data name="EMAIL_LABEL" xml:space="preserve"><value>Email Address</value></data>
+  <data name="EMAIL_PLACEHOLDER" xml:space="preserve"><value>e.g. admin@assetmgmt.io</value></data>
+  <data name="EMAIL_REQUIRED" xml:space="preserve"><value>Email is required</value></data>
+  <data name="EMAIL_INVALID" xml:space="preserve"><value>Please enter a valid email address</value></data>
+  <data name="PASSWORD_LABEL" xml:space="preserve"><value>Password</value></data>
+  <data name="PASSWORD_PLACEHOLDER" xml:space="preserve"><value>••••••••</value></data>
+  <data name="PASSWORD_REQUIRED" xml:space="preserve"><value>Password is required</value></data>
+  <data name="PASSWORD_MINLENGTH" xml:space="preserve"><value>Password must be at least 4 characters</value></data>
+  <data name="REMEMBER_ME" xml:space="preserve"><value>Remember me on this device</value></data>
+  <data name="SIGN_IN_BTN" xml:space="preserve"><value>Sign In</value></data>
+  <data name="AUTHENTICATING" xml:space="preserve"><value>Authenticating...</value></data>
+  <data name="OR_SIGN_IN_WITH" xml:space="preserve"><value>OR SIGN IN WITH</value></data>
+  <data name="SSO_GOOGLE" xml:space="preserve"><value>Google</value></data>
+  <data name="SSO_MICROSOFT" xml:space="preserve"><value>Microsoft</value></data>
+  <data name="SSO_GITHUB" xml:space="preserve"><value>GitHub</value></data>
+  <data name="NAV_BRAND" xml:space="preserve"><value>AssetPulse Platform</value></data>
+  <data name="DEMO_CREDENTIALS" xml:space="preserve"><value>Demo Credentials: admin@assetmgmt.io / password123</value></data>
+  <data name="LANGUAGE_SELECTOR" xml:space="preserve"><value>Language</value></data>
+
+  <!-- AUTHENTICATED TRANSLATIONS -->
+  <data name="NAV_DASHBOARD" xml:space="preserve"><value>Dashboard</value></data>
+  <data name="NAV_ASSETS" xml:space="preserve"><value>Asset Inventory</value></data>
+  <data name="NAV_CATEGORIES" xml:space="preserve"><value>Categories</value></data>
+  <data name="NAV_REPORTS" xml:space="preserve"><value>Reports</value></data>
+  <data name="NAV_SETTINGS" xml:space="preserve"><value>Settings</value></data>
+  <data name="NAV_LOGOUT" xml:space="preserve"><value>Sign Out</value></data>
+  <data name="USER_PROFILE" xml:space="preserve"><value>User Profile</value></data>
+  <data name="ROLE_ADMIN" xml:space="preserve"><value>Administrator</value></data>
+  <data name="ROLE_MANAGER" xml:space="preserve"><value>Asset Manager</value></data>
+  <data name="ROLE_USER" xml:space="preserve"><value>Standard User</value></data>
+  <data name="WELCOME_BACK" xml:space="preserve"><value>Welcome back</value></data>
+  <data name="TOTAL_ASSETS" xml:space="preserve"><value>Total Assets</value></data>
+  <data name="ACTIVE_ASSETS" xml:space="preserve"><value>Active Assets</value></data>
+  <data name="MAINTENANCE_DUE" xml:space="preserve"><value>Maintenance Due</value></data>
+  <data name="SYSTEM_HEALTH" xml:space="preserve"><value>System Status</value></data>
+</root>

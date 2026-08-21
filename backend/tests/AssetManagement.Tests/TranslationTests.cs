@@ -11,7 +11,7 @@ namespace AssetManagement.Tests
     public class TranslationTests
     {
         [Fact]
-        public void GetPublicTranslations_ReturnsPublicDictionary()
+        public void GetPublicTranslations_ReturnsPublicDictionaryForEnglish()
         {
             TranslationService translationService = new TranslationService();
             TranslationsController controller = new TranslationsController(translationService);
@@ -25,6 +25,26 @@ namespace AssetManagement.Tests
             Assert.Equal("en", response.Culture);
             Assert.True(response.Translations.ContainsKey("LOGIN_TITLE"));
             Assert.Equal("Sign in to AssetPulse", response.Translations["LOGIN_TITLE"]);
+        }
+
+        [Theory]
+        [InlineData("es", "Iniciar sesión en AssetPulse")]
+        [InlineData("fr", "Connexion à AssetPulse")]
+        [InlineData("de", "Anmelden bei AssetPulse")]
+        public void GetPublicTranslations_ReturnsLocalizedResourceFromResx(string culture, string expectedTitle)
+        {
+            TranslationService translationService = new TranslationService();
+            TranslationsController controller = new TranslationsController(translationService);
+
+            IResult result = controller.GetPublicTranslations(culture);
+
+            Ok<TranslationResponseDto> okResult = Assert.IsType<Ok<TranslationResponseDto>>(result);
+            TranslationResponseDto? response = okResult.Value;
+
+            Assert.NotNull(response);
+            Assert.Equal(culture, response.Culture);
+            Assert.True(response.Translations.ContainsKey("LOGIN_TITLE"));
+            Assert.Equal(expectedTitle, response.Translations["LOGIN_TITLE"]);
         }
 
         [Fact]

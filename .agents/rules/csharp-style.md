@@ -39,3 +39,7 @@
 - Profile editing must use dedicated DTOs in individual files (`UpdateProfileDto.cs`, `UpdateEmailDto.cs`).
 - Full profile updates (`UpdateProfileDto`) handle `FirstName`, `LastName`, `PreferredLanguage`, `AvatarUrl`, etc.
 - Email updates (`UpdateEmailDto`) are handled separately via a dedicated endpoint (`PUT /api/profile/email`) with strict email format validation and database uniqueness checking (`!AnyAsync(...)`).
+
+## 9. Resource-Based Localization (.resx)
+- Backend translation strings must be stored in standard .NET XML Resource files (`.resx`) grouped by culture e.g. `Translations.resx` (default/English), `Translations.es.resx` (Spanish), `Translations.fr.resx` (French), `Translations.de.resx` (German).
+- `TranslationService` reads localized key-value pairs dynamically from `ResourceManager` / `CultureInfo` based on the requested culture.
