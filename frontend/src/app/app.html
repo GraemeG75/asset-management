@@ -1,1 +1,39 @@
-<router-outlet />
+<header class="app-header">
+  <div class="nav-container">
+    <div class="logo-section">
+      <div class="logo-icon">
+        <mat-icon>dashboard_customize</mat-icon>
+      </div>
+      <div class="logo-text">
+        <span class="brand-title">AssetPulse</span>
+        <span class="brand-tag">Enterprise</span>
+      </div>
+    </div>
+
+    <div class="user-section">
+      @if (userService.isLoggedIn()) {
+        <div class="user-profile-badge">
+          <img 
+            [src]="userService.currentUser()?.avatarUrl" 
+            [alt]="userService.userName()" 
+            class="user-avatar"
+          />
+          <div class="user-details">
+            <span class="user-name">{{ userService.userName() }}</span>
+            <span class="user-email">{{ userService.userEmail() }}</span>
+          </div>
+          <span class="role-pill" [class]="userService.userRole()">
+            {{ userService.userRole() }}
+          </span>
+          <button type="button" class="logout-btn" (click)="onLogout()" title="Sign Out">
+            <mat-icon>logout</mat-icon>
+          </button>
+        </div>
+      }
+    </div>
+  </div>
+</header>
+
+<main class="main-content">
+  <router-outlet></router-outlet>
+</main>

@@ -1,0 +1,91 @@
+<div class="login-page-wrapper">
+  <div class="login-card fade-in">
+    <div class="card-header">
+      <div class="brand-badge">
+        <mat-icon class="shield-icon">lock_open</mat-icon>
+      </div>
+      <h1 class="card-title">Sign in to AssetPulse</h1>
+      <p class="card-subtitle">Manage enterprise assets, track inventory, and access platform features.</p>
+    </div>
+
+    <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="login-form">
+      @if (errorMessage()) {
+        <div class="error-alert fade-in">
+          <mat-icon>error_outline</mat-icon>
+          <span>{{ errorMessage() }}</span>
+        </div>
+      }
+
+      <div class="form-group">
+        <label for="email-input">Email Address</label>
+        <div class="input-wrapper">
+          <mat-icon class="input-icon">mail_outline</mat-icon>
+          <input 
+            id="email-input"
+            type="email" 
+            formControlName="email" 
+            placeholder="e.g. admin@assetmgmt.io" 
+            autocomplete="email"
+          />
+        </div>
+        @if (loginForm.get('email')?.touched && loginForm.get('email')?.hasError('required')) {
+          <span class="field-error">Email is required</span>
+        }
+        @if (loginForm.get('email')?.touched && loginForm.get('email')?.hasError('email')) {
+          <span class="field-error">Please enter a valid email address</span>
+        }
+      </div>
+
+      <div class="form-group">
+        <label for="password-input">Password</label>
+        <div class="input-wrapper">
+          <mat-icon class="input-icon">lock_outline</mat-icon>
+          <input 
+            id="password-input"
+            [type]="hidePassword() ? 'password' : 'text'" 
+            formControlName="password" 
+            placeholder="••••••••" 
+            autocomplete="current-password"
+          />
+          <button 
+            type="button" 
+            class="toggle-pass-btn" 
+            (click)="togglePasswordVisibility()" 
+            tabindex="-1"
+            aria-label="Toggle password visibility"
+          >
+            <mat-icon>{{ hidePassword() ? 'visibility_off' : 'visibility' }}</mat-icon>
+          </button>
+        </div>
+        @if (loginForm.get('password')?.touched && loginForm.get('password')?.hasError('required')) {
+          <span class="field-error">Password is required</span>
+        }
+        @if (loginForm.get('password')?.touched && loginForm.get('password')?.hasError('minlength')) {
+          <span class="field-error">Password must be at least 4 characters</span>
+        }
+      </div>
+
+      <div class="remember-row">
+        <label class="remember-checkbox-label">
+          <input type="checkbox" formControlName="rememberMe" id="remember-me-checkbox" class="custom-checkbox" />
+          <span class="checkbox-custom-box">
+            <mat-icon class="check-icon">check</mat-icon>
+          </span>
+          <span class="remember-text">Remember me on this device</span>
+        </label>
+      </div>
+
+      <div class="form-actions">
+        <button type="submit" class="btn-primary full-width" [disabled]="isLoading() || loginForm.invalid">
+          @if (isLoading()) {
+            <mat-spinner diameter="20" class="btn-spinner"></mat-spinner>
+            <span>Authenticating...</span>
+          } @else {
+            <mat-icon>login</mat-icon>
+            <span>Sign In</span>
+          }
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
