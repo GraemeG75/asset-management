@@ -30,3 +30,12 @@
 - Always enable XML documentation generation in API `.csproj` files (`<GenerateDocumentationFile>true</GenerateDocumentationFile>`).
 - Always annotate API controllers and endpoints with XML comments (`<summary>`, `<param>`, `<returns>`, `<response>`) and OpenAPI attributes (`[ProducesResponseType]`, `[Produces]`).
 - Configure JWT Bearer security definitions in Swagger options when authentication is enabled.
+
+## 7. Controller Separation of Concerns
+- Authentication operations (e.g., `Login`, `SsoLogin`, `Logout`, `TokenRefresh`) belong exclusively in `AuthController` (`/api/auth`).
+- User profile editing and preferences (e.g., `UpdateLanguage`, updating avatar or user details) belong in a dedicated `ProfileController` (`/api/profile`). Do NOT place profile management endpoints inside `AuthController`.
+
+## 8. Profile DTOs & Email Validation
+- Profile editing must use dedicated DTOs in individual files (`UpdateProfileDto.cs`, `UpdateEmailDto.cs`).
+- Full profile updates (`UpdateProfileDto`) handle `FirstName`, `LastName`, `PreferredLanguage`, `AvatarUrl`, etc.
+- Email updates (`UpdateEmailDto`) are handled separately via a dedicated endpoint (`PUT /api/profile/email`) with strict email format validation and database uniqueness checking (`!AnyAsync(...)`).

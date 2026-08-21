@@ -1,8 +1,8 @@
 import { Injectable, signal, computed, inject } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, of, throwError } from 'rxjs';
 import { map, tap, catchError } from 'rxjs/operators';
-import { User, LoginCredentials, SessionInfo, JwtPayload, AuthResponse, SsoProviderId } from '../models/user.model';
+import { User, LoginCredentials, SessionInfo, JwtPayload, AuthResponse, SsoProviderId, UpdateProfileRequest, UpdateEmailRequest } from '../models/user.model';
 
 const TOKEN_KEY = 'asset_mgmt_jwt_token';
 const REMEMBER_KEY = 'asset_mgmt_remember_me';
@@ -171,6 +171,95 @@ export class UserService {
   private applyMockResponse(res: AuthResponse, rememberMe: boolean): Observable<User> {
     this.storeSessionData(res, rememberMe);
     return of(res.user);
+  }
+
+  /**
+   * Updates user's preferred language in profile and backend DB
+   */
+  updatePreferredLanguage(language: string): Observable<User> {
+    const token = this.jwtToken();
+    let headers = new HttpHeaders();
+    if (token) {
+      headers = headers.set('Authorization', `Bearer ${token}`);
+    }
+
+    if (this.http) {
+      return this.http.put<User>('http://localhost:5000/api/profile/language', { language }, { headers }).pipe(
+        tap(user => {
+          this.currentUser.update(curr => curr ? { ...curr, preferredLanguage: language } : null);
+        }),
+        catchError(() => {
+          this.currentUser.update(curr => curr ? { ...curr, preferredLanguage: language } : null);
+          return of(this.currentUser()!);
+        })
+      );
+    }
+
+    this.currentUser.update(curr => curr ? { ...curr, preferredLanguage: language } : null);
+    return of(this.currentUser()!);
+  }
+
+  /**
+   * Updates full user profile (firstName, lastName, preferredLanguage, avatarUrl)
+   */
+  updateProfile(profile: UpdateProfileRequest): Observable<User> {
+    const token = this.jwtToken();
+    let headers = new HttpHeaders();
+    if (token) {
+      headers = headers.set('Authorization', `Bearer ${token}`);
+    }
+
+    if (this.http) {
+      return this.http.put<User>('http://localhost:5000/api/profile', profile, { headers }).pipe(
+        tap(user => {
+          this.currentUser.set(user);
+        }),
+        catchError(() => {
+          this.currentUser.update(curr => curr ? {
+            ...curr,
+            firstName: profile.firstName,
+            lastName: profile.lastName,
+            name: `${profile.firstName} ${profile.lastName}`.trim(),
+            preferredLanguage: profile.preferredLanguage ?? curr.preferredLanguage
+          } : null);
+          return of(this.currentUser()!);
+        })
+      );
+    }
+
+    this.currentUser.update(curr => curr ? {
+      ...curr,
+      firstName: profile.firstName,
+      lastName: profile.lastName,
+      name: `${profile.firstName} ${profile.lastName}`.trim(),
+      preferredLanguage: profile.preferredLanguage ?? curr.preferredLanguage
+    } : null);
+    return of(this.currentUser()!);
+  }
+
+  /**
+   * Updates user email with format and uniqueness validation
+   */
+  updateEmail(newEmail: string): Observable<User> {
+    const token = this.jwtToken();
+    let headers = new HttpHeaders();
+    if (token) {
+      headers = headers.set('Authorization', `Bearer ${token}`);
+    }
+
+    if (this.http) {
+      return this.http.put<User>('http://localhost:5000/api/profile/email', { newEmail }, { headers }).pipe(
+        tap(user => {
+          this.currentUser.set(user);
+        }),
+        catchError((err) => {
+          return throwError(() => new Error(err?.error?.message || 'Failed to update email. Ensure it is valid and not taken.'));
+        })
+      );
+    }
+
+    this.currentUser.update(curr => curr ? { ...curr, email: newEmail } : null);
+    return of(this.currentUser()!);
   }
 
   /**

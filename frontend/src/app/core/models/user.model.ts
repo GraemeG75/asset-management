@@ -9,12 +9,26 @@ export interface SsoProvider {
 
 export interface User {
   id: string;
+  firstName?: string;
+  lastName?: string;
   name: string;
   email: string;
   role: 'admin' | 'manager' | 'user';
   provider?: 'local' | SsoProviderId;
   avatarUrl?: string;
+  preferredLanguage?: string;
   createdAt?: string;
+}
+
+export interface UpdateProfileRequest {
+  firstName: string;
+  lastName: string;
+  preferredLanguage?: string;
+  avatarUrl?: string;
+}
+
+export interface UpdateEmailRequest {
+  newEmail: string;
 }
 
 export interface LoginCredentials {

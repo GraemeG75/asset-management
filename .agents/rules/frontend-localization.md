@@ -8,7 +8,12 @@
   1. **Unauthenticated / Public Endpoint**: Returns dictionary key-values for unauthenticated views (e.g., Login, Password Reset, Landing page).
   2. **Authenticated Endpoint**: Returns dictionary key-values for authenticated views (e.g., Dashboard, Asset Management, User Profile, Settings).
 
-## 3. Dynamic Translation Loading
+## 3. Dynamic Translation Loading & Language Switching
 - The Angular `TranslationService` automatically loads the public dictionary on application initialization.
-- Upon successful login, the `TranslationService` switches to or merges the authenticated translation dictionary.
-- Components use a custom `TranslatePipe` (`{{ 'KEY' | translate }}`) or `TranslationService` signal to reactively render localized strings.
+- The `LoginComponent` includes a language switcher control (`en`, `es`, `fr`, `de`) allowing unauthenticated users to switch cultures prior to logging in.
+- Upon successful login, the `TranslationService` automatically synchronizes with the authenticated user's preferred language saved in their profile.
+
+## 4. User Profile Language Persistence in DB
+- Authenticated users manage their preferred language via their user profile.
+- When an authenticated user changes their language, `UserService.updatePreferredLanguage(language)` calls `PUT /api/auth/profile/language` in the C# backend API.
+- The backend persists `PreferredLanguage` in the database (`UserEntity.PreferredLanguage`) and returns the updated `UserDto`, ensuring language preferences persist across user sessions.

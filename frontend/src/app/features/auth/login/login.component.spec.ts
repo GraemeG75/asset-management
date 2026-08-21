@@ -15,8 +15,11 @@ describe('LoginComponent', () => {
   beforeEach(async () => {
     userServiceMock = {
       isLoggedIn: vi.fn().mockReturnValue(false),
+      currentUser: vi.fn().mockReturnValue(null),
+      jwtToken: vi.fn().mockReturnValue(null),
       login: vi.fn(),
-      loginWithSso: vi.fn()
+      loginWithSso: vi.fn(),
+      updatePreferredLanguage: vi.fn().mockReturnValue(of({}))
     };
     routerMock = {
       navigateByUrl: vi.fn()
@@ -83,5 +86,14 @@ describe('LoginComponent', () => {
 
     expect(component.errorMessage()).toBe('Invalid email or password');
     expect(routerMock.navigateByUrl).not.toHaveBeenCalled();
+  });
+
+  it('should change culture when onLanguageChange is triggered', () => {
+    const spy = vi.spyOn(component.translationService, 'setCulture');
+    const mockEvent = { target: { value: 'es' } } as unknown as Event;
+
+    component.onLanguageChange(mockEvent);
+
+    expect(spy).toHaveBeenCalledWith('es');
   });
 });

@@ -8,6 +8,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { UserService } from '../../../core/services/user.service';
+import { TranslationService, LanguageOption } from '../../../core/services/translation.service';
 import { SsoProviderId } from '../../../core/models/user.model';
 import { TranslatePipe } from '../../../core/pipes/translate.pipe';
 
@@ -32,6 +33,7 @@ export class LoginComponent implements OnInit {
   private userService = inject(UserService);
   private router = inject(Router);
   private route = inject(ActivatedRoute);
+  translationService = inject(TranslationService);
 
   loginForm: FormGroup = this.fb.group({
     email: ['', [Validators.required, Validators.email]],
@@ -44,10 +46,25 @@ export class LoginComponent implements OnInit {
   errorMessage = signal<string | null>(null);
   hidePassword = signal(true);
 
+  get availableLanguages(): LanguageOption[] {
+    return this.translationService.availableLanguages;
+  }
+
+  get currentCulture(): string {
+    return this.translationService.currentCulture();
+  }
+
   ngOnInit(): void {
     if (this.userService.isLoggedIn()) {
       const returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/';
       this.router.navigateByUrl(returnUrl);
+    }
+  }
+
+  onLanguageChange(event: Event): void {
+    const select = event.target as HTMLSelectElement;
+    if (select && select.value) {
+      this.translationService.setCulture(select.value);
     }
   }
 

@@ -1,5 +1,23 @@
 <div class="login-page-wrapper">
   <div class="login-card fade-in">
+    <div class="card-top-bar">
+      <div class="lang-selector-wrapper">
+        <mat-icon class="lang-globe-icon">language</mat-icon>
+        <select 
+          class="lang-select" 
+          [value]="currentCulture" 
+          (change)="onLanguageChange($event)"
+          aria-label="Select Language"
+        >
+          @for (lang of availableLanguages; track lang.code) {
+            <option [value]="lang.code">
+              {{ lang.flag }} {{ lang.name }}
+            </option>
+          }
+        </select>
+      </div>
+    </div>
+
     <div class="card-header">
       <div class="brand-badge">
         <mat-icon class="shield-icon">lock_open</mat-icon>
