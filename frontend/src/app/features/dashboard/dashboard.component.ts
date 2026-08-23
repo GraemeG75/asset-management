@@ -30,44 +30,7 @@ import { FormComponent } from '../../core/components/form-controls/form.componen
   ],
   template: `
     <div class="dashboard-wrapper fade-in">
-      <!-- 1. TOP BOOTSTRAP PROFILE & NAVIGATION BAR -->
-      <header class="bootstrap-topbar">
-        <div class="topbar-left">
-          <div class="brand-badge">
-            <mat-icon>layers</mat-icon>
-            <span>AssetPulse Core</span>
-          </div>
-          <span class="role-chip">{{ bootstrapData()?.role || userService.userRole() }}</span>
-        </div>
-
-        <div class="topbar-right">
-          <!-- Profile Navigation Links Dropdown -->
-          <button mat-button [matMenuTriggerFor]="profileMenu" class="profile-nav-trigger">
-            <mat-icon>account_circle</mat-icon>
-            <span class="user-display-name">{{ bootstrapData()?.userName || userService.userName() }}</span>
-            <mat-icon>arrow_drop_down</mat-icon>
-          </button>
-
-          <mat-menu #profileMenu="matMenu" class="profile-links-menu">
-            <div class="menu-header">
-              <p class="menu-user-name">{{ bootstrapData()?.userName || userService.userName() }}</p>
-              <p class="menu-user-email">{{ bootstrapData()?.userEmail || userService.userEmail() }}</p>
-            </div>
-            <div class="menu-divider"></div>
-            @for (link of profileLinks(); track link.id) {
-              <a mat-menu-item [routerLink]="link.url" class="profile-link-item">
-                <mat-icon>{{ getMatIcon(link.icon) }}</mat-icon>
-                <span>{{ link.label }}</span>
-                @if (link.badge) {
-                  <span class="link-badge" [style.background-color]="link.badgeColor || '#3b82f6'">{{ link.badge }}</span>
-                }
-              </a>
-            }
-          </mat-menu>
-        </div>
-      </header>
-
-      <!-- 2. SITE NAVIGATION LINKS BAR -->
+      <!-- 1. SITE NAVIGATION LINKS BAR -->
       <nav class="site-nav-bar">
         <div class="site-nav-links">
           @for (siteLink of siteLinks(); track siteLink.id) {
@@ -252,89 +215,7 @@ import { FormComponent } from '../../core/components/form-controls/form.componen
       color: var(--text-primary, #f8fafc);
     }
 
-    /* 1. TOP BOOTSTRAP PROFILE BAR */
-    .bootstrap-topbar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 12px 20px;
-      background: rgba(15, 23, 42, 0.85);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      border-radius: 14px;
-      margin-bottom: 16px;
-      backdrop-filter: blur(16px);
-    }
-    .topbar-left {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-    .brand-badge {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-weight: 700;
-      font-size: 1rem;
-      color: #38bdf8;
-    }
-    .brand-badge mat-icon {
-      color: #0284c7;
-    }
-    .role-chip {
-      padding: 4px 10px;
-      background: rgba(56, 189, 248, 0.15);
-      border: 1px solid rgba(56, 189, 248, 0.3);
-      color: #38bdf8;
-      border-radius: 12px;
-      font-size: 0.75rem;
-      font-weight: 600;
-      text-transform: uppercase;
-    }
-    .profile-nav-trigger {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      color: #e2e8f0;
-    }
-    .user-display-name {
-      font-weight: 600;
-      font-size: 0.9rem;
-    }
-
-    /* PROFILE MENU POPUP */
-    .menu-header {
-      padding: 12px 16px;
-    }
-    .menu-user-name {
-      font-weight: 700;
-      margin: 0;
-      color: #0f172a;
-    }
-    .menu-user-email {
-      font-size: 0.8rem;
-      color: #64748b;
-      margin: 2px 0 0 0;
-    }
-    .menu-divider {
-      height: 1px;
-      background: #e2e8f0;
-      margin: 4px 0;
-    }
-    .profile-link-item {
-      display: flex !important;
-      align-items: center;
-      gap: 10px;
-    }
-    .link-badge {
-      margin-left: auto;
-      padding: 2px 8px;
-      border-radius: 10px;
-      color: #ffffff;
-      font-size: 0.7rem;
-      font-weight: 700;
-    }
-
-    /* 2. SITE NAVIGATION LINKS BAR */
+    /* 1. SITE NAVIGATION LINKS BAR */
     .site-nav-bar {
       margin-bottom: 24px;
     }

@@ -71,8 +71,11 @@ namespace AssetManagement.Api
             services.AddScoped<ITranslationService, TranslationService>();
             services.AddScoped<IPasswordHasherService, PasswordHasherService>();
 
-            // Register Dapper Services
-            services.AddSingleton<IDbConnectionFactory, SqliteConnectionFactory>();
+            // Register Dapper Services using connection string from appsettings.json
+            string connectionString = Configuration.GetConnectionString("DefaultConnection") 
+                ?? throw new InvalidOperationException("DefaultConnection string is not configured in appsettings.json.");
+
+            services.AddSingleton<IDbConnectionFactory>(new SqlServerConnectionFactory(connectionString));
             services.AddScoped<IMetadataRepository, DapperMetadataRepository>();
 
             // Configure JWT Authentication
