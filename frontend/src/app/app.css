@@ -75,6 +75,31 @@
   border-radius: 30px;
 }
 
+.clickable-profile {
+  cursor: pointer;
+  user-select: none;
+  transition: all 0.2s ease;
+}
+
+.clickable-profile:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(99, 102, 241, 0.5);
+  box-shadow: 0 0 12px rgba(99, 102, 241, 0.25);
+}
+
+.dropdown-chevron {
+  color: #94a3b8;
+  font-size: 20px;
+  width: 20px;
+  height: 20px;
+  transition: transform 0.2s ease;
+}
+
+.clickable-profile:hover .dropdown-chevron {
+  color: #38bdf8;
+  transform: translateY(1px);
+}
+
 .user-avatar {
   width: 36px;
   height: 36px;
@@ -111,30 +136,44 @@
 .role-pill.manager { background: rgba(6, 182, 212, 0.2); color: #22d3ee; border: 1px solid rgba(6, 182, 212, 0.4); }
 .role-pill.user { background: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.4); }
 
-.logout-btn {
-  background: rgba(244, 63, 94, 0.15);
-  border: 1px solid rgba(244, 63, 94, 0.3);
-  color: #f43f5e;
-  border-radius: 50%;
-  width: 32px;
-  height: 32px;
+.header-menu-user-info {
+  padding: 10px 16px;
   display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  margin-left: 4px;
+  flex-direction: column;
 }
 
-.logout-btn:hover {
-  background: rgba(244, 63, 94, 0.3);
-  transform: scale(1.05);
+.header-menu-user-info .menu-user-name {
+  font-weight: 700;
+  color: #0f172a;
+  font-size: 0.9rem;
 }
 
-.logout-btn mat-icon {
-  font-size: 18px;
-  width: 18px;
-  height: 18px;
+.header-menu-user-info .menu-user-email {
+  color: #64748b;
+  font-size: 0.775rem;
+}
+
+.menu-divider {
+  height: 1px;
+  background: #e2e8f0;
+  margin: 4px 0;
+}
+
+.menu-badge {
+  margin-left: auto;
+  padding: 2px 7px;
+  border-radius: 10px;
+  color: #ffffff;
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+
+.menu-item-logout {
+  color: #ef4444 !important;
+}
+
+.menu-item-logout mat-icon {
+  color: #ef4444 !important;
 }
 
 .main-content {

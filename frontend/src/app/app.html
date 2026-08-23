@@ -12,7 +12,11 @@
 
     <div class="user-section">
       @if (userService.isLoggedIn()) {
-        <div class="user-profile-badge">
+        <div 
+          class="user-profile-badge clickable-profile" 
+          [matMenuTriggerFor]="profileMenu"
+          title="Click to open profile navigation links"
+        >
           <img 
             [src]="userService.currentUser()?.avatarUrl" 
             [alt]="userService.userName()" 
@@ -25,10 +29,33 @@
           <span class="role-pill" [class]="userService.userRole()">
             {{ userService.userRole() }}
           </span>
-          <button type="button" class="logout-btn" (click)="onLogout()" title="Sign Out">
-            <mat-icon>logout</mat-icon>
-          </button>
+          <mat-icon class="dropdown-chevron">expand_more</mat-icon>
         </div>
+
+        <mat-menu #profileMenu="matMenu" class="header-profile-menu">
+          <div class="header-menu-user-info">
+            <span class="menu-user-name">{{ userService.userName() }}</span>
+            <span class="menu-user-email">{{ userService.userEmail() }}</span>
+          </div>
+          <div class="menu-divider"></div>
+
+          @for (link of profileNavLinks(); track link.id) {
+            @if (link.id === 'profile-logout') {
+              <button mat-menu-item (click)="onLogout()" class="menu-item-logout">
+                <mat-icon>logout</mat-icon>
+                <span>{{ link.label }}</span>
+              </button>
+            } @else {
+              <a mat-menu-item [routerLink]="link.url">
+                <mat-icon>{{ getMatIcon(link.icon) }}</mat-icon>
+                <span>{{ link.label }}</span>
+                @if (link.badge) {
+                  <span class="menu-badge" [style.background-color]="link.badgeColor || '#3b82f6'">{{ link.badge }}</span>
+                }
+              </a>
+            }
+          }
+        </mat-menu>
       }
     </div>
   </div>

@@ -1,7 +1,7 @@
-import { Injectable, inject } from '@angular/core';
+import { Injectable, inject, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { FormBuilder, FormGroup, Validators, ValidatorFn } from '@angular/forms';
-import { Observable, forkJoin } from 'rxjs';
+import { Observable, forkJoin, tap } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
 import {
   PageInfo,
@@ -9,6 +9,8 @@ import {
   FormFieldConfig,
   FieldValidator
 } from '../models/form-schema.model';
+import { ApiService } from './api.service';
+import { UserBootstrapData } from '../models/user-bootstrap.model';
 
 @Injectable({
   providedIn: 'root'
@@ -16,7 +18,19 @@ import {
 export class FormMetadataService {
   private http = inject(HttpClient);
   private fb = inject(FormBuilder);
+  private apiService = inject(ApiService);
   private baseUrl = '/api/form-metadata';
+
+  readonly bootstrapData = signal<UserBootstrapData | null>(null);
+
+  /**
+   * Fetches user bootstrap data (profile nav links, site nav links, inbox count, dashboard form types)
+   */
+  getUserBootstrap(): Observable<UserBootstrapData> {
+    return this.apiService.getUserBootstrap().pipe(
+      tap(data => this.bootstrapData.set(data))
+    );
+  }
 
   /**
    * Gets list of available pages in system
@@ -59,13 +73,14 @@ export class FormMetadataService {
    * Builds an Angular Reactive FormGroup based on field metadata and form editable state
    */
   createFormGroup(
-    fields: FormFieldConfig[],
+    fields: FormFieldConfig[] = [],
     initialValues: Record<string, any> = {},
     isFormEditable: boolean = true
   ): FormGroup {
     const group: Record<string, any> = {};
+    const safeFields = fields || [];
 
-    fields.forEach(field => {
+    safeFields.forEach(field => {
       const initialValue = initialValues[field.key] !== undefined
         ? initialValues[field.key]
         : (field.value !== undefined ? field.value : field.defaultValue ?? this.getDefaultValueForType(field.type));
@@ -82,10 +97,14 @@ export class FormMetadataService {
     return this.fb.group(group);
   }
 
-  private buildValidators(validators: FieldValidator[] = []): ValidatorFn[] {
+  private buildValidators(validators?: FieldValidator[] | null): ValidatorFn[] {
     const fns: ValidatorFn[] = [];
+    if (!validators || !Array.isArray(validators)) {
+      return fns;
+    }
 
     validators.forEach(v => {
+      if (!v || !v.type) return;
       switch (v.type) {
         case 'required':
           fns.push(Validators.required);

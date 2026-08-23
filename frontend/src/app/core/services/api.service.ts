@@ -4,6 +4,7 @@ import { Observable } from 'rxjs';
 import { finalize } from 'rxjs/operators';
 import { LoadingService } from './loading.service';
 import { User, LoginCredentials, AuthResponse, SsoProviderId, UpdateProfileRequest } from '../models/user.model';
+import { UserBootstrapData } from '../models/user-bootstrap.model';
 
 export interface TranslationResponse {
   culture: string;
@@ -26,7 +27,8 @@ export const API_ENDPOINTS = {
   PROFILE_EMAIL: `${BASE_URL}/profile/email`,
   PROFILE_LANGUAGE: `${BASE_URL}/profile/language`,
   TRANSLATIONS_PUBLIC: `${BASE_URL}/translations/public`,
-  TRANSLATIONS_AUTHENTICATED: `${BASE_URL}/translations/authenticated`
+  TRANSLATIONS_AUTHENTICATED: `${BASE_URL}/translations/authenticated`,
+  USER_BOOTSTRAP: `${BASE_URL}/form-metadata/user-bootstrap`
 } as const;
 
 @Injectable({
@@ -61,6 +63,13 @@ export class ApiService {
    */
   getCurrentUser(options: ApiRequestOptions = {}): Observable<User> {
     return this.get<User>(API_ENDPOINTS.AUTH_ME, options);
+  }
+
+  /**
+   * Retrieves user bootstrap data upon login (profile nav links, site nav links, inbox, dashboard forms)
+   */
+  getUserBootstrap(options: ApiRequestOptions = {}): Observable<UserBootstrapData> {
+    return this.get<UserBootstrapData>(API_ENDPOINTS.USER_BOOTSTRAP, options);
   }
 
   // ==========================================
