@@ -1,7 +1,11 @@
+using System.Data;
 using AssetManagement.Api.Controllers;
 using AssetManagement.Core.Models;
+using AssetManagement.Core.Services;
+using AssetManagement.Infrastructure.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.Data.Sqlite;
 using Xunit;
 
 namespace AssetManagement.Tests
@@ -9,10 +13,16 @@ namespace AssetManagement.Tests
     public class BootstrapTests
     {
         [Fact]
-        public void GetUserBootstrap_ReturnsOkResultWithData()
+        public async Task GetUserBootstrap_ReturnsOkResultWithData()
         {
-            FormMetadataController controller = new FormMetadataController();
-            IResult result = controller.GetUserBootstrap();
+            using SqliteConnection connection = new SqliteConnection("Data Source=:memory:");
+            connection.Open();
+
+            SqliteConnectionFactory factory = new SqliteConnectionFactory(connection);
+            DapperMetadataRepository repository = new DapperMetadataRepository(factory);
+            MetaController controller = new MetaController(repository);
+
+            IResult result = await controller.GetUserBootstrap();
 
             Ok<UserBootstrapDto> okResult = Assert.IsType<Ok<UserBootstrapDto>>(result);
             UserBootstrapDto dto = okResult.Value!;

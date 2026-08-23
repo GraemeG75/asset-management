@@ -28,7 +28,11 @@ export const API_ENDPOINTS = {
   PROFILE_LANGUAGE: `${BASE_URL}/profile/language`,
   TRANSLATIONS_PUBLIC: `${BASE_URL}/translations/public`,
   TRANSLATIONS_AUTHENTICATED: `${BASE_URL}/translations/authenticated`,
-  USER_BOOTSTRAP: `${BASE_URL}/form-metadata/user-bootstrap`
+  USER_BOOTSTRAP: `${BASE_URL}/meta/user-bootstrap`,
+  META_PAGES: `${BASE_URL}/meta/pages`,
+  META_FORMS: `${BASE_URL}/meta/forms`,
+  META_MAPPERS: `${BASE_URL}/meta/mappers`,
+  META_FLAVORS: `${BASE_URL}/meta/flavors`
 } as const;
 
 @Injectable({
