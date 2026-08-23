@@ -32,7 +32,7 @@ export class FormShowcaseComponent implements OnInit {
   private snackBar = inject(MatSnackBar);
 
   availablePages: { pageId: string; title: string; description?: string }[] = [];
-  selectedPageId: string = 'asset-operations';
+  selectedPageId: string = 'dashboard';
   activePageInfo?: PageInfo;
 
   selectedFormId: string = 'asset-create';
@@ -57,15 +57,6 @@ export class FormShowcaseComponent implements OnInit {
         if (pages.length > 0) {
           this.onPageIdChange(pages[0].pageId);
         }
-      },
-      error: () => {
-        // Dev fallback if API server is not running
-        this.availablePages = [
-          { pageId: 'asset-operations', title: 'Asset Operations Workspace', description: 'Contains asset registration and maintenance forms' },
-          { pageId: 'user-settings', title: 'User Account & Profile Page', description: 'Contains user settings and notification forms' },
-          { pageId: 'audit-reports', title: 'Compliance & Audit Page', description: 'Contains read-only asset audit summary forms' }
-        ];
-        this.onPageIdChange('asset-operations');
       }
     });
   }
@@ -81,9 +72,6 @@ export class FormShowcaseComponent implements OnInit {
         if (pageInfo.forms && pageInfo.forms.length > 0) {
           this.onFormIdChange(pageInfo.forms[0].formId);
         }
-      },
-      error: () => {
-        this.loadFormSchema(this.selectedFormId);
       }
     });
   }

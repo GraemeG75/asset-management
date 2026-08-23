@@ -17,4 +17,5 @@
 ## 5. Mappers & Mapper Flavors Architecture (`x_mappers` & `x_mapper_flavors`)
 - **Mapper (`x_mappers`)**: Defines an underlying database data source (Table, View, or Stored Procedure) containing the master set of all available fields.
 - **Mapper Flavor (`x_mapper_flavors`)**: A reduced, customized subset of fields from a Mapper. Defines field-level behavior (editable vs readonly, input component type, grid span, validation).
+- **Flavor Uniqueness**: `flavor_key` is NOT globally unique across the database; it is scoped per mapper (`CONSTRAINT UQ_x_mapper_flavors_mapper_flavor UNIQUE (mapper_id, flavor_key)`).
 - **Localization**: Mappers, Flavors, and Flavor Fields MUST have corresponding `_locales` tables (`x_mapper_locales`, `x_mapper_flavor_locales`, `x_mapper_flavor_field_locales`) with views providing automatic `en-US` default fallbacks.

@@ -156,9 +156,9 @@ USING (VALUES
     (CAST('f6d25416-2368-4a5e-8049-b6c5d4e3f201' AS UNIQUEIDENTIFIER), N'flavor-asset-inspection-readonly', CAST('b3f810e2-8924-4d1a-b605-7281f9a1c0d4' AS UNIQUEIDENTIFIER)),
     (CAST('07e36527-3479-4b6f-9150-c7d6e5f40312' AS UNIQUEIDENTIFIER), N'flavor-user-profile', CAST('c4a921f3-9035-4e2b-c716-83920ab2d1e5' AS UNIQUEIDENTIFIER))
 ) AS source (id, flavor_key, mapper_id)
-ON target.flavor_key = source.flavor_key
+ON target.mapper_id = source.mapper_id AND target.flavor_key = source.flavor_key
 WHEN MATCHED THEN 
-    UPDATE SET mapper_id = source.mapper_id
+    UPDATE SET flavor_key = source.flavor_key
 WHEN NOT MATCHED THEN 
     INSERT (id, flavor_key, mapper_id) VALUES (source.id, source.flavor_key, source.mapper_id);
 GO
@@ -225,4 +225,19 @@ WHEN MATCHED THEN
 WHEN NOT MATCHED THEN 
     INSERT (id, page_id, form_id, visible_clause, display_order, is_active)
     VALUES (source.id, source.page_id, source.form_id, source.visible_clause, source.display_order, source.is_active);
+GO
+
+-- 9. Seed Initial Demo Users
+MERGE INTO users AS target
+USING (VALUES 
+    (CAST('f81d4fae-7dec-11d0-a765-00a0c91e6bf6' AS UNIQUEIDENTIFIER), N'admin', N'Admin', N'User', N'admin@assetmgmt.io', N'AQAAAAIAAYagAAAAEG3cE3sB9f7z8x0y1z2a3b4c5d6e7f8g9h0i1j2k3l4m5n6o', N'admin', N'local', N'https://api.dicebear.com/7.x/bottts/svg?seed=admin%40assetmgmt.io', N'en-US'),
+    (CAST('a1b2c3d4-e5f6-4789-8012-3456789abcde' AS UNIQUEIDENTIFIER), N'manager', N'Manager', N'User', N'manager@assetmgmt.io', N'AQAAAAIAAYagAAAAEG3cE3sB9f7z8x0y1z2a3b4c5d6e7f8g9h0i1j2k3l4m5n6o', N'manager', N'local', N'https://api.dicebear.com/7.x/bottts/svg?seed=manager%40assetmgmt.io', N'en-US'),
+    (CAST('b2c3d4e5-f6a7-4890-9123-456789abcdef' AS UNIQUEIDENTIFIER), N'user', N'Standard', N'User', N'user@assetmgmt.io', N'AQAAAAIAAYagAAAAEG3cE3sB9f7z8x0y1z2a3b4c5d6e7f8g9h0i1j2k3l4m5n6o', N'user', N'local', N'https://api.dicebear.com/7.x/bottts/svg?seed=user%40assetmgmt.io', N'en-US')
+) AS source (id, username, first_name, last_name, email, password_hash, role, provider, avatar_url, preferred_language)
+ON target.email = source.email
+WHEN MATCHED THEN 
+    UPDATE SET username = source.username, first_name = source.first_name, last_name = source.last_name, role = source.role, provider = source.provider
+WHEN NOT MATCHED THEN 
+    INSERT (id, username, first_name, last_name, email, password_hash, role, provider, avatar_url, preferred_language)
+    VALUES (source.id, source.username, source.first_name, source.last_name, source.email, source.password_hash, source.role, source.provider, source.avatar_url, source.preferred_language);
 GO

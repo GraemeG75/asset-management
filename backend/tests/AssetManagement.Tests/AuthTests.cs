@@ -30,7 +30,8 @@ namespace AssetManagement.Tests
             AppDbContext db = GetInMemoryDbContext();
             IConfiguration config = new ConfigurationBuilder().AddInMemoryCollection().Build();
             TokenService tokenService = new TokenService(config);
-            AuthController controller = new AuthController(db, tokenService);
+            PasswordHasherService hasher = new PasswordHasherService();
+            AuthController controller = new AuthController(db, tokenService, hasher);
 
             LoginRequestDto request = new LoginRequestDto("admin@assetmgmt.io", "password123", RememberMe: true);
             IResult result = await controller.Login(request);
@@ -50,7 +51,8 @@ namespace AssetManagement.Tests
             AppDbContext db = GetInMemoryDbContext();
             IConfiguration config = new ConfigurationBuilder().AddInMemoryCollection().Build();
             TokenService tokenService = new TokenService(config);
-            AuthController controller = new AuthController(db, tokenService);
+            PasswordHasherService hasher = new PasswordHasherService();
+            AuthController controller = new AuthController(db, tokenService, hasher);
 
             SsoLoginRequestDto request = new SsoLoginRequestDto("google", RememberMe: true);
             IResult result = await controller.SsoLogin(request);
@@ -72,8 +74,10 @@ namespace AssetManagement.Tests
 
             UserEntity user = new UserEntity
             {
-                Id = "usr_test_123",
-                Name = "Test User",
+                Id = "d7c8a910-1234-4567-8901-abcdef123456",
+                Username = "testuser",
+                FirstName = "Test",
+                LastName = "User",
                 Email = "test@assetmgmt.io",
                 Role = "user",
                 Provider = "local"

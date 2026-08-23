@@ -1,4 +1,4 @@
-import { TestBed } from '@angular/core/testing';
+import { TestBed } from '@angular/core';
 import { TranslationService } from './translation.service';
 import { UserService } from './user.service';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
@@ -23,12 +23,16 @@ describe('TranslationService', () => {
     expect(service).toBeTruthy();
   });
 
-  it('should translate public keys', () => {
+  it('should translate loaded keys', () => {
+    service.translations.set({
+      'LOGIN_TITLE': 'Sign in to AssetPulse',
+      'SIGN_IN_BTN': 'Sign In'
+    });
     expect(service.translate('LOGIN_TITLE')).toBe('Sign in to AssetPulse');
     expect(service.translate('SIGN_IN_BTN')).toBe('Sign In');
   });
 
-  it('should fallback to provided default text if key is missing', () => {
-    expect(service.translate('NON_EXISTENT_KEY', 'Fallback Text')).toBe('Fallback Text');
+  it('should return provided default text if key is missing', () => {
+    expect(service.translate('NON_EXISTENT_KEY', 'Default Text')).toBe('Default Text');
   });
 });

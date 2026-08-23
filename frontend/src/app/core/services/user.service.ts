@@ -1,7 +1,7 @@
 import { Injectable, signal, computed, inject } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable, of, throwError } from 'rxjs';
-import { map, tap, catchError } from 'rxjs/operators';
+import { Observable, throwError } from 'rxjs';
+import { map, tap } from 'rxjs/operators';
 import { User, LoginCredentials, SessionInfo, JwtPayload, AuthResponse, SsoProviderId, UpdateProfileRequest } from '../models/user.model';
 import { ApiService } from './api.service';
 
@@ -80,7 +80,7 @@ export class UserService {
   }
 
   /**
-   * Performs local email/password login via ApiService with fallback
+   * Performs local email/password login via ApiService connected to backend DB
    */
   login(credentials: LoginCredentials): Observable<User> {
     if (!credentials.email) {
@@ -88,89 +88,28 @@ export class UserService {
     }
 
     const rememberMe = credentials.rememberMe ?? true;
-    const request$ = this.apiService?.login(credentials);
-
-    if (request$) {
-      return request$.pipe(
-        tap(res => this.storeSessionData(res, rememberMe)),
-        map(res => res.user),
-        catchError(() => {
-          const fallbackRes = this.createMockAuthResponse(credentials.email, 'local');
-          return this.applyMockResponse(fallbackRes, rememberMe);
-        })
-      );
+    if (!this.apiService) {
+      return throwError(() => new Error('API service unavailable'));
     }
 
-    const mockRes = this.createMockAuthResponse(credentials.email, 'local');
-    return this.applyMockResponse(mockRes, rememberMe);
+    return this.apiService.login(credentials).pipe(
+      tap(res => this.storeSessionData(res, rememberMe)),
+      map(res => res.user)
+    );
   }
 
   /**
-   * Performs SSO login via ApiService with fallback
+   * Performs SSO login via ApiService connected to backend DB
    */
   loginWithSso(provider: SsoProviderId, rememberMe: boolean = true): Observable<User> {
-    const request$ = this.apiService?.loginWithSso(provider, rememberMe);
-
-    if (request$) {
-      return request$.pipe(
-        tap(res => this.storeSessionData(res, rememberMe)),
-        map(res => res.user),
-        catchError(() => {
-          const providerEmails: Record<SsoProviderId, string> = {
-            google: 'alex.dev@gmail.com',
-            azure: 'sarah.corp@microsoft.com',
-            github: 'octocat.lead@github.com'
-          };
-          const email = providerEmails[provider] || `user.${provider}@sso-provider.io`;
-          const fallbackRes = this.createMockAuthResponse(email, provider);
-          return this.applyMockResponse(fallbackRes, rememberMe);
-        })
-      );
+    if (!this.apiService) {
+      return throwError(() => new Error('API service unavailable'));
     }
 
-    const providerEmails: Record<SsoProviderId, string> = {
-      google: 'alex.dev@gmail.com',
-      azure: 'sarah.corp@microsoft.com',
-      github: 'octocat.lead@github.com'
-    };
-    const email = providerEmails[provider] || `user.${provider}@sso-provider.io`;
-    const mockRes = this.createMockAuthResponse(email, provider);
-    return this.applyMockResponse(mockRes, rememberMe);
-  }
-
-  createMockAuthResponse(email: string, provider: 'local' | SsoProviderId): AuthResponse {
-    const isManager = email.includes('admin') || email.includes('manager') || email.includes('corp');
-    const isAdmin = email.includes('admin');
-    const role: 'admin' | 'manager' | 'user' = isAdmin ? 'admin' : (isManager ? 'manager' : 'user');
-    const namePart = email.split('@')[0].replace('.', ' ');
-    const formattedName = namePart.charAt(0).toUpperCase() + namePart.slice(1);
-    const firstName = formattedName.split(' ')[0];
-    const lastName = formattedName.split(' ').slice(1).join(' ') || '';
-
-    const user: User = {
-      id: `usr_${Math.random().toString(36).substring(2, 9)}`,
-      firstName,
-      lastName,
-      name: formattedName,
-      email,
-      role,
-      provider,
-      avatarUrl: `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(email)}`,
-      preferredLanguage: 'en',
-      createdAt: new Date().toISOString()
-    };
-
-    const mockToken = this.createMockJwtToken(user);
-    return {
-      user,
-      token: mockToken,
-      expiresAt: Date.now() + 86400000
-    };
-  }
-
-  private applyMockResponse(res: AuthResponse, rememberMe: boolean): Observable<User> {
-    this.storeSessionData(res, rememberMe);
-    return of(res.user);
+    return this.apiService.loginWithSso(provider, rememberMe).pipe(
+      tap(res => this.storeSessionData(res, rememberMe)),
+      map(res => res.user)
+    );
   }
 
   /**
@@ -183,22 +122,15 @@ export class UserService {
       headers = headers.set('Authorization', `Bearer ${token}`);
     }
 
-    const request$ = this.apiService?.updateLanguage(language, { headers });
-
-    if (request$) {
-      return request$.pipe(
-        tap(user => {
-          this.currentUser.update(curr => curr ? { ...curr, preferredLanguage: language } : null);
-        }),
-        catchError(() => {
-          this.currentUser.update(curr => curr ? { ...curr, preferredLanguage: language } : null);
-          return of(this.currentUser()!);
-        })
-      );
+    if (!this.apiService) {
+      return throwError(() => new Error('API service unavailable'));
     }
 
-    this.currentUser.update(curr => curr ? { ...curr, preferredLanguage: language } : null);
-    return of(this.currentUser()!);
+    return this.apiService.updateLanguage(language, { headers }).pipe(
+      tap(user => {
+        this.currentUser.set(user);
+      })
+    );
   }
 
   /**
@@ -211,34 +143,15 @@ export class UserService {
       headers = headers.set('Authorization', `Bearer ${token}`);
     }
 
-    const request$ = this.apiService?.updateProfile(profile, { headers });
-
-    if (request$) {
-      return request$.pipe(
-        tap(user => {
-          this.currentUser.set(user);
-        }),
-        catchError(() => {
-          this.currentUser.update(curr => curr ? {
-            ...curr,
-            firstName: profile.firstName,
-            lastName: profile.lastName,
-            name: `${profile.firstName} ${profile.lastName}`.trim(),
-            preferredLanguage: profile.preferredLanguage ?? curr.preferredLanguage
-          } : null);
-          return of(this.currentUser()!);
-        })
-      );
+    if (!this.apiService) {
+      return throwError(() => new Error('API service unavailable'));
     }
 
-    this.currentUser.update(curr => curr ? {
-      ...curr,
-      firstName: profile.firstName,
-      lastName: profile.lastName,
-      name: `${profile.firstName} ${profile.lastName}`.trim(),
-      preferredLanguage: profile.preferredLanguage ?? curr.preferredLanguage
-    } : null);
-    return of(this.currentUser()!);
+    return this.apiService.updateProfile(profile, { headers }).pipe(
+      tap(user => {
+        this.currentUser.set(user);
+      })
+    );
   }
 
   /**
@@ -251,21 +164,15 @@ export class UserService {
       headers = headers.set('Authorization', `Bearer ${token}`);
     }
 
-    const request$ = this.apiService?.updateEmail(newEmail, { headers });
-
-    if (request$) {
-      return request$.pipe(
-        tap(user => {
-          this.currentUser.set(user);
-        }),
-        catchError((err) => {
-          return throwError(() => new Error(err?.error?.message || 'Failed to update email. Ensure it is valid and not taken.'));
-        })
-      );
+    if (!this.apiService) {
+      return throwError(() => new Error('API service unavailable'));
     }
 
-    this.currentUser.update(curr => curr ? { ...curr, email: newEmail } : null);
-    return of(this.currentUser()!);
+    return this.apiService.updateEmail(newEmail, { headers }).pipe(
+      tap(user => {
+        this.currentUser.set(user);
+      })
+    );
   }
 
   /**
@@ -322,20 +229,5 @@ export class UserService {
     } catch {
       return null;
     }
-  }
-
-  private createMockJwtToken(user: User): string {
-    const header = btoa(JSON.stringify({ alg: 'HS256', typ: 'JWT' }));
-    const payload = btoa(JSON.stringify({
-      sub: user.id,
-      name: user.name,
-      email: user.email,
-      role: user.role,
-      provider: user.provider,
-      avatarUrl: user.avatarUrl,
-      iat: Math.floor(Date.now() / 1000),
-      exp: Math.floor(Date.now() / 1000) + 86400
-    }));
-    return `${header}.${payload}.signature`;
   }
 }

@@ -69,6 +69,7 @@ namespace AssetManagement.Api
             // Register Services from Infrastructure
             services.AddScoped<ITokenService, TokenService>();
             services.AddScoped<ITranslationService, TranslationService>();
+            services.AddScoped<IPasswordHasherService, PasswordHasherService>();
 
             // Register Dapper Services
             services.AddSingleton<IDbConnectionFactory, SqliteConnectionFactory>();

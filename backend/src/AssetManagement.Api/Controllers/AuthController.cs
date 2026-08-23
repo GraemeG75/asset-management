@@ -20,15 +20,17 @@ namespace AssetManagement.Api.Controllers
     {
         private readonly AppDbContext _dbContext;
         private readonly ITokenService _tokenService;
+        private readonly IPasswordHasherService _passwordHasher;
 
-        public AuthController(AppDbContext dbContext, ITokenService tokenService)
+        public AuthController(AppDbContext dbContext, ITokenService tokenService, IPasswordHasherService passwordHasher)
         {
             _dbContext = dbContext;
             _tokenService = tokenService;
+            _passwordHasher = passwordHasher;
         }
 
         /// <summary>
-        /// Authenticates local user with email and password
+        /// Authenticates local user with email and password using one-way salted password hashing
         /// </summary>
         /// <param name="request">User login credentials</param>
         /// <returns>Auth payload containing JWT token and user profile</returns>
@@ -53,24 +55,30 @@ namespace AssetManagement.Api.Controllers
                 bool isManager = request.Email.Contains("admin") || request.Email.Contains("manager");
                 bool isAdmin = request.Email.Contains("admin");
                 string role = isAdmin ? "admin" : (isManager ? "manager" : "user");
-                string name = request.Email.Split('@')[0].Replace('.', ' ');
+                string emailUsername = request.Email.Split('@')[0];
+                string name = emailUsername.Replace('.', ' ');
 
                 user = new UserEntity
                 {
+                    Username = emailUsername.ToLower(),
                     Name = System.Globalization.CultureInfo.CurrentCulture.TextInfo.ToTitleCase(name),
                     Email = request.Email.ToLower(),
-                    PasswordHash = request.Password ?? "password123",
                     Role = role,
                     Provider = "local",
                     AvatarUrl = $"https://api.dicebear.com/7.x/bottts/svg?seed={Uri.EscapeDataString(request.Email)}"
                 };
+                user.PasswordHash = _passwordHasher.HashPassword(user, request.Password ?? "password123");
 
                 _dbContext.Users.Add(user);
                 await _dbContext.SaveChangesAsync();
             }
-            else if (!string.IsNullOrEmpty(user.PasswordHash) && !string.IsNullOrEmpty(request.Password) && user.PasswordHash != request.Password)
+            else if (!string.IsNullOrEmpty(user.PasswordHash) && !string.IsNullOrEmpty(request.Password))
             {
-                return TypedResults.Unauthorized();
+                bool isValidPassword = _passwordHasher.VerifyPassword(user, user.PasswordHash, request.Password);
+                if (!isValidPassword)
+                {
+                    return TypedResults.Unauthorized();
+                }
             }
 
             (string token, long expiresAt) = _tokenService.GenerateToken(user, request.RememberMe);
@@ -105,10 +113,12 @@ namespace AssetManagement.Api.Controllers
                 bool isManager = email.Contains("admin") || email.Contains("corp") || email.Contains("microsoft");
                 bool isAdmin = email.Contains("admin");
                 string role = isAdmin ? "admin" : (isManager ? "manager" : "user");
-                string name = email.Split('@')[0].Replace('.', ' ');
+                string emailUsername = email.Split('@')[0];
+                string name = emailUsername.Replace('.', ' ');
 
                 user = new UserEntity
                 {
+                    Username = emailUsername.ToLower(),
                     Name = System.Globalization.CultureInfo.CurrentCulture.TextInfo.ToTitleCase(name),
                     Email = email.ToLower(),
                     Role = role,

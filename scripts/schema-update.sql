@@ -134,9 +134,10 @@ IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'x_mapper_flavors')
 BEGIN
     CREATE TABLE x_mapper_flavors (
         id UNIQUEIDENTIFIER NOT NULL PRIMARY KEY DEFAULT NEWID(),
-        flavor_key NVARCHAR(64) NOT NULL UNIQUE,
+        flavor_key NVARCHAR(64) NOT NULL,
         mapper_id UNIQUEIDENTIFIER NOT NULL FOREIGN KEY REFERENCES x_mappers(id) ON DELETE CASCADE,
-        created_at DATETIMEOFFSET NOT NULL DEFAULT SYSDATETIMEOFFSET()
+        created_at DATETIMEOFFSET NOT NULL DEFAULT SYSDATETIMEOFFSET(),
+        CONSTRAINT UQ_x_mapper_flavors_mapper_flavor UNIQUE (mapper_id, flavor_key)
     );
 END;
 
@@ -300,3 +301,23 @@ BEGIN
         CONSTRAINT PK_x_form_field_option_locales PRIMARY KEY (option_id, locale_code)
     );
 END;
+GO
+
+-- 14. Master Users Table for Authentication & User Info
+IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'users')
+BEGIN
+    CREATE TABLE users (
+        id UNIQUEIDENTIFIER NOT NULL PRIMARY KEY DEFAULT NEWID(),
+        username NVARCHAR(64) NOT NULL UNIQUE,
+        first_name NVARCHAR(64) NOT NULL,
+        last_name NVARCHAR(64) NOT NULL,
+        email NVARCHAR(256) NOT NULL UNIQUE,
+        password_hash NVARCHAR(512) NOT NULL,
+        role NVARCHAR(32) NOT NULL DEFAULT N'user',
+        provider NVARCHAR(32) NOT NULL DEFAULT N'local',
+        avatar_url NVARCHAR(512) NULL,
+        preferred_language NVARCHAR(10) NOT NULL DEFAULT N'en-US',
+        created_at DATETIMEOFFSET NOT NULL DEFAULT SYSDATETIMEOFFSET()
+    );
+END;
+GO
