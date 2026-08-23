@@ -330,28 +330,28 @@ namespace AssetManagement.Tests
 
                 INSERT INTO x_locales (locale_code, display_name, is_default, is_active) VALUES ('en-US', 'English', 1, 1), ('es-ES', 'Spanish', 0, 1);
                 
-                INSERT INTO x_site_nav_links (id, link_key, icon, route, badge_count, display_order) VALUES ('11111111-1111-1111-1111-111111111101', 'nav-dashboard', 'home', '/dashboard', 4, 1);
-                INSERT INTO x_site_nav_link_locales (nav_id, locale_code, label) VALUES ('11111111-1111-1111-1111-111111111101', 'en-US', 'Inbox & Dashboard'), ('11111111-1111-1111-1111-111111111101', 'es-ES', 'Bandeja de Entrada');
+                INSERT INTO x_site_nav_links (id, link_key, icon, route, badge_count, display_order) VALUES ('e8a719c2-570a-4a2e-9d2a-8d7d91e84321', 'nav-dashboard', 'home', '/dashboard', 4, 1);
+                INSERT INTO x_site_nav_link_locales (nav_id, locale_code, label) VALUES ('e8a719c2-570a-4a2e-9d2a-8d7d91e84321', 'en-US', 'Inbox & Dashboard'), ('e8a719c2-570a-4a2e-9d2a-8d7d91e84321', 'es-ES', 'Bandeja de Entrada');
 
-                INSERT INTO x_profile_nav_links (id, link_key, icon, url, display_order) VALUES ('22222222-2222-2222-2222-222222222201', 'profile-settings', 'user', '/profile', 1);
-                INSERT INTO x_profile_nav_link_locales (nav_id, locale_code, label) VALUES ('22222222-2222-2222-2222-222222222201', 'en-US', 'My Profile');
+                INSERT INTO x_profile_nav_links (id, link_key, icon, url, display_order) VALUES ('f47ac10b-58cc-4372-a567-0e02b2c3d479', 'profile-settings', 'user', '/profile', 1);
+                INSERT INTO x_profile_nav_link_locales (nav_id, locale_code, label) VALUES ('f47ac10b-58cc-4372-a567-0e02b2c3d479', 'en-US', 'My Profile');
 
-                INSERT INTO x_pages (id, page_key, category) VALUES ('33333333-3333-3333-3333-333333333301', 'dashboard', 'General');
-                INSERT INTO x_page_locales (page_id, locale_code, title, description) VALUES ('33333333-3333-3333-3333-333333333301', 'en-US', 'Operational Dashboard', 'Main Workspace');
+                INSERT INTO x_pages (id, page_key, category) VALUES ('d9b2e8f1-4c7a-412e-8901-b2c3d4e5f607', 'dashboard', 'General');
+                INSERT INTO x_page_locales (page_id, locale_code, title, description) VALUES ('d9b2e8f1-4c7a-412e-8901-b2c3d4e5f607', 'en-US', 'Operational Dashboard', 'Main Workspace');
 
-                INSERT INTO x_mappers (id, mapper_key, source_type, source_name) VALUES ('66666666-6666-6666-6666-666666666601', 'mapper-asset-master', 'TABLE', 'dbo.Assets');
-                INSERT INTO x_mapper_locales (mapper_id, locale_code, display_name, description) VALUES ('66666666-6666-6666-6666-666666666601', 'en-US', 'Asset Master Mapper', 'Full Asset Repository');
+                INSERT INTO x_mappers (id, mapper_key, source_type, source_name) VALUES ('b3f810e2-8924-4d1a-b605-7281f9a1c0d4', 'mapper-asset-master', 'TABLE', 'dbo.Assets');
+                INSERT INTO x_mapper_locales (mapper_id, locale_code, display_name, description) VALUES ('b3f810e2-8924-4d1a-b605-7281f9a1c0d4', 'en-US', 'Asset Master Mapper', 'Full Asset Repository');
 
-                INSERT INTO x_mapper_flavors (id, flavor_key, mapper_id) VALUES ('77777777-7777-7777-7777-777777777701', 'flavor-asset-registration', '66666666-6666-6666-6666-666666666601');
-                INSERT INTO x_mapper_flavor_locales (flavor_id, locale_code, display_name, description) VALUES ('77777777-7777-7777-7777-777777777701', 'en-US', 'Asset Registration Flavor', 'Field Subset');
+                INSERT INTO x_mapper_flavors (id, flavor_key, mapper_id) VALUES ('e5c14305-1257-4f4d-9938-a5b4c3d2e1f0', 'flavor-asset-registration', 'b3f810e2-8924-4d1a-b605-7281f9a1c0d4');
+                INSERT INTO x_mapper_flavor_locales (flavor_id, locale_code, display_name, description) VALUES ('e5c14305-1257-4f4d-9938-a5b4c3d2e1f0', 'en-US', 'Asset Registration Flavor', 'Field Subset');
 
-                INSERT INTO x_mapper_flavor_fields (id, flavor_id, key_name, field_type, is_editable, display_order) VALUES ('88888888-8888-8888-8888-888888888801', '77777777-7777-7777-7777-777777777701', 'assetTag', 'text', 1, 1);
-                INSERT INTO x_mapper_flavor_field_locales (field_id, locale_code, label, placeholder) VALUES ('88888888-8888-8888-8888-888888888801', 'en-US', 'Asset Tag Number', 'e.g. AST-2026');
+                INSERT INTO x_mapper_flavor_fields (id, flavor_id, key_name, field_type, is_editable, display_order) VALUES ('18f47638-4580-4c7a-a261-d8e7f6a51423', 'e5c14305-1257-4f4d-9938-a5b4c3d2e1f0', 'assetTag', 'text', 1, 1);
+                INSERT INTO x_mapper_flavor_field_locales (field_id, locale_code, label, placeholder) VALUES ('18f47638-4580-4c7a-a261-d8e7f6a51423', 'en-US', 'Asset Tag Number', 'e.g. AST-2026');
 
-                INSERT INTO x_forms (id, form_key, flavor_id, form_type, visible_clause, is_editable) VALUES ('44444444-4444-4444-4444-444444444401', 'asset-create', '77777777-7777-7777-7777-777777777701', 'standard', 'user.isAuthenticated', 1);
-                INSERT INTO x_form_locales (form_id, locale_code, caption, title, submit_button_text) VALUES ('44444444-4444-4444-4444-444444444401', 'en-US', 'New Asset Registration Form', 'Asset Registration', 'Save Asset');
+                INSERT INTO x_forms (id, form_key, flavor_id, form_type, visible_clause, is_editable) VALUES ('9a7b6c5d-4e3f-412a-8901-23456789abcd', 'asset-create', 'e5c14305-1257-4f4d-9938-a5b4c3d2e1f0', 'standard', 'user.isAuthenticated', 1);
+                INSERT INTO x_form_locales (form_id, locale_code, caption, title, submit_button_text) VALUES ('9a7b6c5d-4e3f-412a-8901-23456789abcd', 'en-US', 'New Asset Registration Form', 'Asset Registration', 'Save Asset');
 
-                INSERT INTO x_page_forms (id, page_id, form_id, display_order) VALUES ('55555555-5555-5555-5555-555555555501', '33333333-3333-3333-3333-333333333301', '44444444-4444-4444-4444-444444444401', 1);
+                INSERT INTO x_page_forms (id, page_id, form_id, display_order) VALUES ('4fcab102-9d8e-467f-d456-789abcdef012', 'd9b2e8f1-4c7a-412e-8901-b2c3d4e5f607', '9a7b6c5d-4e3f-412a-8901-23456789abcd', 1);
             ";
             cmd.ExecuteNonQuery();
         }
