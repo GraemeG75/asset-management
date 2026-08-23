@@ -31,7 +31,8 @@ namespace AssetManagement.Tests
             IConfiguration config = new ConfigurationBuilder().AddInMemoryCollection().Build();
             TokenService tokenService = new TokenService(config);
             PasswordHasherService hasher = new PasswordHasherService();
-            AuthController controller = new AuthController(db, tokenService, hasher);
+            TranslationService translationService = new TranslationService();
+            AuthController controller = new AuthController(db, tokenService, hasher, translationService);
 
             LoginRequestDto request = new LoginRequestDto("admin@assetmgmt.io", "password123", RememberMe: true);
             IResult result = await controller.Login(request);
@@ -52,7 +53,8 @@ namespace AssetManagement.Tests
             IConfiguration config = new ConfigurationBuilder().AddInMemoryCollection().Build();
             TokenService tokenService = new TokenService(config);
             PasswordHasherService hasher = new PasswordHasherService();
-            AuthController controller = new AuthController(db, tokenService, hasher);
+            TranslationService translationService = new TranslationService();
+            AuthController controller = new AuthController(db, tokenService, hasher, translationService);
 
             SsoLoginRequestDto request = new SsoLoginRequestDto("google", RememberMe: true);
             IResult result = await controller.SsoLogin(request);

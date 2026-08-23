@@ -81,4 +81,16 @@
   <data name="ACTIVE_ASSETS" xml:space="preserve"><value>Active Assets</value></data>
   <data name="MAINTENANCE_DUE" xml:space="preserve"><value>Maintenance Due</value></data>
   <data name="SYSTEM_HEALTH" xml:space="preserve"><value>System Status</value></data>
+
+  <!-- LOCALIZED ERROR MESSAGES -->
+  <data name="ERR_USER_NOT_FOUND" xml:space="preserve"><value>User profile not found.</value></data>
+  <data name="ERR_FIRST_LAST_NAME_REQUIRED" xml:space="preserve"><value>First name and last name are required.</value></data>
+  <data name="ERR_EMAIL_REQUIRED" xml:space="preserve"><value>Email address is required.</value></data>
+  <data name="ERR_EMAIL_INVALID" xml:space="preserve"><value>Please enter a valid email address.</value></data>
+  <data name="ERR_EMAIL_TAKEN" xml:space="preserve"><value>Email address is already in use by another user.</value></data>
+  <data name="ERR_LANGUAGE_REQUIRED" xml:space="preserve"><value>Language selection is required.</value></data>
+  <data name="ERR_PAGE_NOT_FOUND" xml:space="preserve"><value>Page '{0}' was not found.</value></data>
+  <data name="ERR_FORM_NOT_FOUND" xml:space="preserve"><value>Form schema '{0}' was not found.</value></data>
+  <data name="ERR_UNAUTHORIZED" xml:space="preserve"><value>Unauthorized access or invalid token.</value></data>
+  <data name="ERR_INVALID_CREDENTIALS" xml:space="preserve"><value>Invalid email or password credentials.</value></data>
 </root>

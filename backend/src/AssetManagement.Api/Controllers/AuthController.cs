@@ -21,12 +21,18 @@ namespace AssetManagement.Api.Controllers
         private readonly AppDbContext _dbContext;
         private readonly ITokenService _tokenService;
         private readonly IPasswordHasherService _passwordHasher;
+        private readonly ITranslationService _translationService;
 
-        public AuthController(AppDbContext dbContext, ITokenService tokenService, IPasswordHasherService passwordHasher)
+        public AuthController(
+            AppDbContext dbContext,
+            ITokenService tokenService,
+            IPasswordHasherService passwordHasher,
+            ITranslationService translationService)
         {
             _dbContext = dbContext;
             _tokenService = tokenService;
             _passwordHasher = passwordHasher;
+            _translationService = translationService;
         }
 
         /// <summary>
@@ -43,9 +49,12 @@ namespace AssetManagement.Api.Controllers
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<IResult> Login([FromBody] LoginRequestDto request)
         {
+            string locale = Request?.Query["locale"].ToString() ?? "en-US";
+
             if (string.IsNullOrWhiteSpace(request.Email))
             {
-                return TypedResults.BadRequest(new { message = "Email is required" });
+                string msg = _translationService.GetString("ERR_EMAIL_REQUIRED", locale);
+                return TypedResults.BadRequest(new { message = msg });
             }
 
             UserEntity? user = await _dbContext.Users.FirstOrDefaultAsync(u => u.Email.ToLower() == request.Email.ToLower());
@@ -77,6 +86,8 @@ namespace AssetManagement.Api.Controllers
                 bool isValidPassword = _passwordHasher.VerifyPassword(user, user.PasswordHash, request.Password);
                 if (!isValidPassword)
                 {
+                    string userCulture = user.PreferredLanguage ?? locale;
+                    string msg = _translationService.GetString("ERR_INVALID_CREDENTIALS", userCulture);
                     return TypedResults.Unauthorized();
                 }
             }
@@ -159,7 +170,8 @@ namespace AssetManagement.Api.Controllers
             UserEntity? user = await _dbContext.Users.FindAsync(userId);
             if (user == null)
             {
-                return TypedResults.NotFound();
+                string msg = _translationService.GetString("ERR_USER_NOT_FOUND", "en-US");
+                return TypedResults.NotFound(new { message = msg });
             }
 
             return TypedResults.Ok(MapToUserDto(user));

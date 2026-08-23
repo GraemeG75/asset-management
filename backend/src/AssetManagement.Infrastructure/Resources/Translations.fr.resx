@@ -81,4 +81,16 @@
   <data name="ACTIVE_ASSETS" xml:space="preserve"><value>Actifs actifs</value></data>
   <data name="MAINTENANCE_DUE" xml:space="preserve"><value>Maintenance due</value></data>
   <data name="SYSTEM_HEALTH" xml:space="preserve"><value>État du système</value></data>
+
+  <!-- LOCALIZED ERROR MESSAGES -->
+  <data name="ERR_USER_NOT_FOUND" xml:space="preserve"><value>Profil utilisateur non trouvé.</value></data>
+  <data name="ERR_FIRST_LAST_NAME_REQUIRED" xml:space="preserve"><value>Le prénom et le nom de famille sont requis.</value></data>
+  <data name="ERR_EMAIL_REQUIRED" xml:space="preserve"><value>L'adresse e-mail est requise.</value></data>
+  <data name="ERR_EMAIL_INVALID" xml:space="preserve"><value>Veuillez entrer une adresse e-mail valide.</value></data>
+  <data name="ERR_EMAIL_TAKEN" xml:space="preserve"><value>L'adresse e-mail est déjà utilisée par un autre utilisateur.</value></data>
+  <data name="ERR_LANGUAGE_REQUIRED" xml:space="preserve"><value>La sélection de la langue est requise.</value></data>
+  <data name="ERR_PAGE_NOT_FOUND" xml:space="preserve"><value>La page '{0}' est introuvable.</value></data>
+  <data name="ERR_FORM_NOT_FOUND" xml:space="preserve"><value>Le schéma de formulaire '{0}' est introuvable.</value></data>
+  <data name="ERR_UNAUTHORIZED" xml:space="preserve"><value>Accès non autorisé ou jeton invalide.</value></data>
+  <data name="ERR_INVALID_CREDENTIALS" xml:space="preserve"><value>Identifiants e-mail ou mot de passe invalides.</value></data>
 </root>

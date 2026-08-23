@@ -2,6 +2,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Security.Claims;
 using AssetManagement.Core.Dtos;
 using AssetManagement.Core.Models;
+using AssetManagement.Core.Services;
 using AssetManagement.Infrastructure.Data;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -20,10 +21,12 @@ namespace AssetManagement.Api.Controllers
     public class ProfileController : ControllerBase
     {
         private readonly AppDbContext _dbContext;
+        private readonly ITranslationService _translationService;
 
-        public ProfileController(AppDbContext dbContext)
+        public ProfileController(AppDbContext dbContext, ITranslationService translationService)
         {
             _dbContext = dbContext;
+            _translationService = translationService;
         }
 
         /// <summary>
@@ -48,7 +51,8 @@ namespace AssetManagement.Api.Controllers
             UserEntity? user = await _dbContext.Users.FindAsync(userId);
             if (user == null)
             {
-                return TypedResults.NotFound();
+                string msg = _translationService.GetString("ERR_USER_NOT_FOUND", GetUserLocale(null));
+                return TypedResults.NotFound(new { message = msg });
             }
 
             return TypedResults.Ok(MapToUserDto(user));
@@ -70,11 +74,6 @@ namespace AssetManagement.Api.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IResult> UpdateProfile([FromBody] UpdateProfileDto request)
         {
-            if (string.IsNullOrWhiteSpace(request.FirstName) && string.IsNullOrWhiteSpace(request.LastName))
-            {
-                return TypedResults.BadRequest(new { message = "First name or last name is required" });
-            }
-
             string? userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userId))
             {
@@ -82,9 +81,18 @@ namespace AssetManagement.Api.Controllers
             }
 
             UserEntity? user = await _dbContext.Users.FindAsync(userId);
+            string locale = GetUserLocale(user);
+
             if (user == null)
             {
-                return TypedResults.NotFound();
+                string msg = _translationService.GetString("ERR_USER_NOT_FOUND", locale);
+                return TypedResults.NotFound(new { message = msg });
+            }
+
+            if (string.IsNullOrWhiteSpace(request.FirstName) && string.IsNullOrWhiteSpace(request.LastName))
+            {
+                string msg = _translationService.GetString("ERR_FIRST_LAST_NAME_REQUIRED", locale);
+                return TypedResults.BadRequest(new { message = msg });
             }
 
             user.FirstName = request.FirstName.Trim();
@@ -119,13 +127,6 @@ namespace AssetManagement.Api.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IResult> UpdateEmail([FromBody] UpdateEmailDto request)
         {
-            if (string.IsNullOrWhiteSpace(request.NewEmail) || !new EmailAddressAttribute().IsValid(request.NewEmail))
-            {
-                return TypedResults.BadRequest(new { message = "A valid email address is required" });
-            }
-
-            string normalizedEmail = request.NewEmail.Trim().ToLower();
-
             string? userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userId))
             {
@@ -133,15 +134,27 @@ namespace AssetManagement.Api.Controllers
             }
 
             UserEntity? user = await _dbContext.Users.FindAsync(userId);
+            string locale = GetUserLocale(user);
+
             if (user == null)
             {
-                return TypedResults.NotFound();
+                string msg = _translationService.GetString("ERR_USER_NOT_FOUND", locale);
+                return TypedResults.NotFound(new { message = msg });
             }
+
+            if (string.IsNullOrWhiteSpace(request.NewEmail) || !new EmailAddressAttribute().IsValid(request.NewEmail))
+            {
+                string msg = _translationService.GetString("ERR_EMAIL_INVALID", locale);
+                return TypedResults.BadRequest(new { message = msg });
+            }
+
+            string normalizedEmail = request.NewEmail.Trim().ToLower();
 
             bool emailTaken = await _dbContext.Users.AnyAsync(u => u.Email.ToLower() == normalizedEmail && u.Id != userId);
             if (emailTaken)
             {
-                return TypedResults.BadRequest(new { message = "Email address is already in use by another account" });
+                string msg = _translationService.GetString("ERR_EMAIL_TAKEN", locale);
+                return TypedResults.BadRequest(new { message = msg });
             }
 
             user.Email = normalizedEmail;
@@ -166,11 +179,6 @@ namespace AssetManagement.Api.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IResult> UpdateLanguage([FromBody] UpdateLanguageRequestDto request)
         {
-            if (string.IsNullOrWhiteSpace(request.Language))
-            {
-                return TypedResults.BadRequest(new { message = "Language is required" });
-            }
-
             string? userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userId))
             {
@@ -178,15 +186,40 @@ namespace AssetManagement.Api.Controllers
             }
 
             UserEntity? user = await _dbContext.Users.FindAsync(userId);
+            string locale = GetUserLocale(user);
+
             if (user == null)
             {
-                return TypedResults.NotFound();
+                string msg = _translationService.GetString("ERR_USER_NOT_FOUND", locale);
+                return TypedResults.NotFound(new { message = msg });
+            }
+
+            if (string.IsNullOrWhiteSpace(request.Language))
+            {
+                string msg = _translationService.GetString("ERR_LANGUAGE_REQUIRED", locale);
+                return TypedResults.BadRequest(new { message = msg });
             }
 
             user.PreferredLanguage = request.Language.ToLower();
             await _dbContext.SaveChangesAsync();
 
             return TypedResults.Ok(MapToUserDto(user));
+        }
+
+        private string GetUserLocale(UserEntity? user)
+        {
+            if (user != null && !string.IsNullOrWhiteSpace(user.PreferredLanguage))
+            {
+                return user.PreferredLanguage;
+            }
+
+            string? requestLocale = Request?.Query["locale"].ToString();
+            if (!string.IsNullOrWhiteSpace(requestLocale))
+            {
+                return requestLocale;
+            }
+
+            return "en-US";
         }
 
         private static UserDto MapToUserDto(UserEntity user) =>

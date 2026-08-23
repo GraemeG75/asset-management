@@ -63,5 +63,29 @@ namespace AssetManagement.Tests
             Assert.True(response.Translations.ContainsKey("NAV_DASHBOARD"));
             Assert.Equal("Dashboard", response.Translations["NAV_DASHBOARD"]);
         }
+
+        [Theory]
+        [InlineData("en-US", "User profile not found.")]
+        [InlineData("es-ES", "Perfil de usuario no encontrado.")]
+        [InlineData("fr-FR", "Profil utilisateur non trouvé.")]
+        [InlineData("de-DE", "Benutzerprofil nicht gefunden.")]
+        public void GetString_ReturnsLocalizedErrorMessageForUserLocale(string culture, string expectedMessage)
+        {
+            TranslationService translationService = new TranslationService();
+            string localizedMsg = translationService.GetString("ERR_USER_NOT_FOUND", culture);
+            Assert.Equal(expectedMessage, localizedMsg);
+        }
+
+        [Theory]
+        [InlineData("en-US", "dashboard", "Page 'dashboard' was not found.")]
+        [InlineData("es-ES", "dashboard", "No se encontró la página 'dashboard'.")]
+        [InlineData("fr-FR", "dashboard", "La page 'dashboard' est introuvable.")]
+        [InlineData("de-DE", "dashboard", "Seite 'dashboard' wurde nicht gefunden.")]
+        public void GetString_FormatsArgumentsForLocalizedErrorMessages(string culture, string pageKey, string expectedMessage)
+        {
+            TranslationService translationService = new TranslationService();
+            string localizedMsg = translationService.GetString("ERR_PAGE_NOT_FOUND", culture, pageKey);
+            Assert.Equal(expectedMessage, localizedMsg);
+        }
     }
 }

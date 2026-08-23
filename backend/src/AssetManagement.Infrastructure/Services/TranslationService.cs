@@ -7,7 +7,7 @@ using AssetManagement.Core.Services;
 namespace AssetManagement.Infrastructure.Services
 {
     /// <summary>
-    /// Serves localized translation dictionaries from compiled .resx resource files
+    /// Serves localized translation dictionaries and localized strings from compiled .resx resource files
     /// </summary>
     public class TranslationService : ITranslationService
     {
@@ -54,6 +54,34 @@ namespace AssetManagement.Infrastructure.Services
             return new TranslationResponseDto(cultureInfo.TwoLetterISOLanguageName, dictionary);
         }
 
+        /// <summary>
+        /// Retrieves formatted localized string from .resx resource files based on key and culture
+        /// </summary>
+        public string GetString(string key, string? culture = "en-US", params object[] args)
+        {
+            CultureInfo cultureInfo = GetCultureInfo(culture);
+            string? value = _resourceManager.GetString(key, cultureInfo);
+
+            if (string.IsNullOrEmpty(value))
+            {
+                value = key;
+            }
+
+            if (args != null && args.Length > 0)
+            {
+                try
+                {
+                    return string.Format(cultureInfo, value, args);
+                }
+                catch
+                {
+                    return value;
+                }
+            }
+
+            return value;
+        }
+
         private Dictionary<string, string> GetDictionaryForKeys(CultureInfo cultureInfo, HashSet<string> targetKeys)
         {
             Dictionary<string, string> result = new Dictionary<string, string>();
@@ -74,16 +102,23 @@ namespace AssetManagement.Infrastructure.Services
         {
             if (string.IsNullOrWhiteSpace(culture))
             {
-                return CultureInfo.GetCultureInfo("en");
+                return CultureInfo.GetCultureInfo("en-US");
             }
 
             try
             {
-                return CultureInfo.GetCultureInfo(culture.Trim().ToLower());
+                return CultureInfo.GetCultureInfo(culture.Trim());
             }
             catch
             {
-                return CultureInfo.GetCultureInfo("en");
+                try
+                {
+                    return CultureInfo.GetCultureInfo(culture.Trim().Split('-')[0]);
+                }
+                catch
+                {
+                    return CultureInfo.GetCultureInfo("en-US");
+                }
             }
         }
     }

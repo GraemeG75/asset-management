@@ -12,10 +12,12 @@ namespace AssetManagement.Api.Controllers
     public class MetaController : ControllerBase
     {
         private readonly IMetadataRepository _metadataRepository;
+        private readonly ITranslationService _translationService;
 
-        public MetaController(IMetadataRepository metadataRepository)
+        public MetaController(IMetadataRepository metadataRepository, ITranslationService translationService)
         {
             _metadataRepository = metadataRepository;
+            _translationService = translationService;
         }
 
         /// <summary>
@@ -123,7 +125,8 @@ namespace AssetManagement.Api.Controllers
             XPageEntity? page = await _metadataRepository.GetPageByKeyAsync(pageKey, locale);
             if (page == null)
             {
-                return TypedResults.NotFound(new { message = $"Page '{pageKey}' not found." });
+                string msg = _translationService.GetString("ERR_PAGE_NOT_FOUND", locale, pageKey);
+                return TypedResults.NotFound(new { message = msg });
             }
 
             IEnumerable<XFormEntity> forms = await _metadataRepository.GetFormsForPageAsync(pageKey, locale);
@@ -156,7 +159,8 @@ namespace AssetManagement.Api.Controllers
             XFormEntity? form = await _metadataRepository.GetFormByKeyAsync(formKey, locale);
             if (form == null)
             {
-                return TypedResults.NotFound(new { message = $"Form schema '{formKey}' not found." });
+                string msg = _translationService.GetString("ERR_FORM_NOT_FOUND", locale, formKey);
+                return TypedResults.NotFound(new { message = msg });
             }
 
             List<FormFieldDto> fields = new List<FormFieldDto>();

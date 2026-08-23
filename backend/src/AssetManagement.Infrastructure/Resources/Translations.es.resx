@@ -81,4 +81,16 @@
   <data name="ACTIVE_ASSETS" xml:space="preserve"><value>Activos activos</value></data>
   <data name="MAINTENANCE_DUE" xml:space="preserve"><value>Mantenimiento pendiente</value></data>
   <data name="SYSTEM_HEALTH" xml:space="preserve"><value>Estado del sistema</value></data>
+
+  <!-- LOCALIZED ERROR MESSAGES -->
+  <data name="ERR_USER_NOT_FOUND" xml:space="preserve"><value>Perfil de usuario no encontrado.</value></data>
+  <data name="ERR_FIRST_LAST_NAME_REQUIRED" xml:space="preserve"><value>El nombre y los apellidos son obligatorios.</value></data>
+  <data name="ERR_EMAIL_REQUIRED" xml:space="preserve"><value>La dirección de correo electrónico es obligatoria.</value></data>
+  <data name="ERR_EMAIL_INVALID" xml:space="preserve"><value>Por favor, introduzca una dirección de correo electrónico válida.</value></data>
+  <data name="ERR_EMAIL_TAKEN" xml:space="preserve"><value>La dirección de correo electrónico ya está en uso por otro usuario.</value></data>
+  <data name="ERR_LANGUAGE_REQUIRED" xml:space="preserve"><value>La selección de idioma es obligatoria.</value></data>
+  <data name="ERR_PAGE_NOT_FOUND" xml:space="preserve"><value>No se encontró la página '{0}'.</value></data>
+  <data name="ERR_FORM_NOT_FOUND" xml:space="preserve"><value>No se encontró el esquema del formulario '{0}'.</value></data>
+  <data name="ERR_UNAUTHORIZED" xml:space="preserve"><value>Acceso no autorizado o token no válido.</value></data>
+  <data name="ERR_INVALID_CREDENTIALS" xml:space="preserve"><value>Credenciales de correo electrónico o contraseña no válidas.</value></data>
 </root>

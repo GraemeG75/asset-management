@@ -3,6 +3,7 @@ using AssetManagement.Api.Controllers;
 using AssetManagement.Core.Dtos;
 using AssetManagement.Core.Models;
 using AssetManagement.Infrastructure.Data;
+using AssetManagement.Infrastructure.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
@@ -26,7 +27,8 @@ namespace AssetManagement.Tests
         public async Task GetProfile_ShouldReturnCurrentAuthenticatedUserProfile()
         {
             AppDbContext db = GetInMemoryDbContext();
-            ProfileController controller = new ProfileController(db);
+            TranslationService translationService = new TranslationService();
+            ProfileController controller = new ProfileController(db, translationService);
 
             UserEntity? user = await db.Users.FirstOrDefaultAsync();
             Assert.NotNull(user);
@@ -57,7 +59,8 @@ namespace AssetManagement.Tests
         public async Task UpdateProfile_ShouldUpdateFirstNameLastNameLanguageAndAvatar()
         {
             AppDbContext db = GetInMemoryDbContext();
-            ProfileController controller = new ProfileController(db);
+            TranslationService translationService = new TranslationService();
+            ProfileController controller = new ProfileController(db, translationService);
 
             UserEntity? user = await db.Users.FirstOrDefaultAsync();
             Assert.NotNull(user);
@@ -74,7 +77,7 @@ namespace AssetManagement.Tests
                 HttpContext = new DefaultHttpContext { User = claimsPrincipal }
             };
 
-            UpdateProfileDto request = new UpdateProfileDto("Alex", "Morgan", "de", "https://example.com/avatar.png");
+            UpdateProfileDto request = new UpdateProfileDto("Alex", "Morgan", "de-DE", "https://example.com/avatar.png");
             IResult result = await controller.UpdateProfile(request);
 
             Ok<UserDto> okResult = Assert.IsType<Ok<UserDto>>(result);
@@ -84,20 +87,21 @@ namespace AssetManagement.Tests
             Assert.Equal("Alex", updatedUser.FirstName);
             Assert.Equal("Morgan", updatedUser.LastName);
             Assert.Equal("Alex Morgan", updatedUser.Name);
-            Assert.Equal("de", updatedUser.PreferredLanguage);
+            Assert.Equal("de-de", updatedUser.PreferredLanguage);
 
             UserEntity? dbUser = await db.Users.FindAsync(user.Id);
             Assert.NotNull(dbUser);
             Assert.Equal("Alex", dbUser.FirstName);
             Assert.Equal("Morgan", dbUser.LastName);
-            Assert.Equal("de", dbUser.PreferredLanguage);
+            Assert.Equal("de-de", dbUser.PreferredLanguage);
         }
 
         [Fact]
         public async Task UpdateEmail_ShouldUpdateEmailWhenValidAndNotTaken()
         {
             AppDbContext db = GetInMemoryDbContext();
-            ProfileController controller = new ProfileController(db);
+            TranslationService translationService = new TranslationService();
+            ProfileController controller = new ProfileController(db, translationService);
 
             UserEntity? user = await db.Users.FirstOrDefaultAsync();
             Assert.NotNull(user);
@@ -125,13 +129,16 @@ namespace AssetManagement.Tests
         }
 
         [Fact]
-        public async Task UpdateEmail_ShouldReturnBadRequestWhenEmailInvalid()
+        public async Task UpdateEmail_ShouldReturnLocalizedBadRequestWhenEmailInvalid()
         {
             AppDbContext db = GetInMemoryDbContext();
-            ProfileController controller = new ProfileController(db);
+            TranslationService translationService = new TranslationService();
+            ProfileController controller = new ProfileController(db, translationService);
 
             UserEntity? user = await db.Users.FirstOrDefaultAsync();
             Assert.NotNull(user);
+            user.PreferredLanguage = "es-ES";
+            await db.SaveChangesAsync();
 
             System.Security.Claims.ClaimsPrincipal claimsPrincipal = new System.Security.Claims.ClaimsPrincipal(
                 new System.Security.Claims.ClaimsIdentity(new[]
@@ -155,7 +162,8 @@ namespace AssetManagement.Tests
         public async Task UpdateLanguage_ShouldUpdateUserPreferredLanguageInDb()
         {
             AppDbContext db = GetInMemoryDbContext();
-            ProfileController controller = new ProfileController(db);
+            TranslationService translationService = new TranslationService();
+            ProfileController controller = new ProfileController(db, translationService);
 
             UserEntity? user = await db.Users.FirstOrDefaultAsync();
             Assert.NotNull(user);
@@ -172,14 +180,14 @@ namespace AssetManagement.Tests
                 HttpContext = new DefaultHttpContext { User = claimsPrincipal }
             };
 
-            UpdateLanguageRequestDto request = new UpdateLanguageRequestDto("fr");
+            UpdateLanguageRequestDto request = new UpdateLanguageRequestDto("fr-FR");
             IResult result = await controller.UpdateLanguage(request);
 
             Ok<UserDto> okResult = Assert.IsType<Ok<UserDto>>(result);
             UserDto? updatedUser = okResult.Value;
 
             Assert.NotNull(updatedUser);
-            Assert.Equal("fr", updatedUser.PreferredLanguage);
+            Assert.Equal("fr-fr", updatedUser.PreferredLanguage);
         }
     }
 }

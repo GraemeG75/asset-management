@@ -81,4 +81,16 @@
   <data name="ACTIVE_ASSETS" xml:space="preserve"><value>Aktive Anlagen</value></data>
   <data name="MAINTENANCE_DUE" xml:space="preserve"><value>Wartung fällig</value></data>
   <data name="SYSTEM_HEALTH" xml:space="preserve"><value>Systemstatus</value></data>
+
+  <!-- LOCALIZED ERROR MESSAGES -->
+  <data name="ERR_USER_NOT_FOUND" xml:space="preserve"><value>Benutzerprofil nicht gefunden.</value></data>
+  <data name="ERR_FIRST_LAST_NAME_REQUIRED" xml:space="preserve"><value>Vorname und Nachname sind erforderlich.</value></data>
+  <data name="ERR_EMAIL_REQUIRED" xml:space="preserve"><value>E-Mail-Adresse ist erforderlich.</value></data>
+  <data name="ERR_EMAIL_INVALID" xml:space="preserve"><value>Bitte geben Sie eine gültige E-Mail-Adresse ein.</value></data>
+  <data name="ERR_EMAIL_TAKEN" xml:space="preserve"><value>E-Mail-Adresse wird bereits von einem anderen Benutzer verwendet.</value></data>
+  <data name="ERR_LANGUAGE_REQUIRED" xml:space="preserve"><value>Sprachauswahl ist erforderlich.</value></data>
+  <data name="ERR_PAGE_NOT_FOUND" xml:space="preserve"><value>Seite '{0}' wurde nicht gefunden.</value></data>
+  <data name="ERR_FORM_NOT_FOUND" xml:space="preserve"><value>Formularschema '{0}' wurde nicht gefunden.</value></data>
+  <data name="ERR_UNAUTHORIZED" xml:space="preserve"><value>Unbefugter Zugriff oder ungültiges Token.</value></data>
+  <data name="ERR_INVALID_CREDENTIALS" xml:space="preserve"><value>Ungültige E-Mail oder Passwort-Zugangsdaten.</value></data>
 </root>

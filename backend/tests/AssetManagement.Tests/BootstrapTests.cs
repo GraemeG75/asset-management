@@ -22,7 +22,8 @@ namespace AssetManagement.Tests
 
             SqliteConnectionFactory factory = new SqliteConnectionFactory(connection);
             DapperMetadataRepository repository = new DapperMetadataRepository(factory);
-            MetaController controller = new MetaController(repository);
+            TranslationService translationService = new TranslationService();
+            MetaController controller = new MetaController(repository, translationService);
 
             IResult result = await controller.GetUserBootstrap();
 
