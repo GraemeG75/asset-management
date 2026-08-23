@@ -157,7 +157,7 @@ BEGIN
     CREATE TABLE x_mapper_flavor_fields (
         id UNIQUEIDENTIFIER NOT NULL PRIMARY KEY DEFAULT NEWID(),
         flavor_id UNIQUEIDENTIFIER NOT NULL FOREIGN KEY REFERENCES x_mapper_flavors(id) ON DELETE CASCADE,
-        mapper_field_id UNIQUEIDENTIFIER NULL FOREIGN KEY REFERENCES x_mapper_fields(id) ON DELETE SET NULL,
+        mapper_field_id UNIQUEIDENTIFIER NULL FOREIGN KEY REFERENCES x_mapper_fields(id) ON DELETE NO ACTION,
         key_name NVARCHAR(64) NOT NULL,
         field_type NVARCHAR(32) NOT NULL DEFAULT N'text', -- 'text', 'select', 'date', 'toggle', 'radio', 'textarea'
         is_editable BIT NOT NULL DEFAULT 1,
