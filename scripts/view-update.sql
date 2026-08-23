@@ -13,6 +13,7 @@ SELECT
     is_active
 FROM x_locales
 WHERE is_active = 1;
+GO
 
 -- 2. Localized Site Navigation Links Metadata View
 CREATE OR ALTER VIEW vw_x_site_nav_links_localized AS
@@ -33,6 +34,7 @@ LEFT JOIN x_site_nav_link_locales req_loc
 LEFT JOIN x_site_nav_link_locales def_loc 
     ON sn.id = def_loc.nav_id AND def_loc.locale_code = N'en-US'
 WHERE sn.is_active = 1 AND l.is_active = 1;
+GO
 
 -- 3. Localized Profile Navigation Links Metadata View
 CREATE OR ALTER VIEW vw_x_profile_nav_links_localized AS
@@ -53,6 +55,7 @@ LEFT JOIN x_profile_nav_link_locales req_loc
 LEFT JOIN x_profile_nav_link_locales def_loc 
     ON pn.id = def_loc.nav_id AND def_loc.locale_code = N'en-US'
 WHERE pn.is_active = 1 AND l.is_active = 1;
+GO
 
 -- 4. Localized Pages Metadata View
 CREATE OR ALTER VIEW vw_x_pages_localized AS
@@ -71,6 +74,7 @@ LEFT JOIN x_page_locales req_loc
 LEFT JOIN x_page_locales def_loc 
     ON p.id = def_loc.page_id AND def_loc.locale_code = N'en-US'
 WHERE l.is_active = 1;
+GO
 
 -- 5. Localized Mappers Metadata View
 CREATE OR ALTER VIEW vw_x_mappers_localized AS
@@ -90,6 +94,7 @@ LEFT JOIN x_mapper_locales req_loc
 LEFT JOIN x_mapper_locales def_loc 
     ON m.id = def_loc.mapper_id AND def_loc.locale_code = N'en-US'
 WHERE l.is_active = 1;
+GO
 
 -- 6. Localized Mapper Flavors Metadata View
 CREATE OR ALTER VIEW vw_x_mapper_flavors_localized AS
@@ -110,6 +115,7 @@ LEFT JOIN x_mapper_flavor_locales req_loc
 LEFT JOIN x_mapper_flavor_locales def_loc 
     ON mf.id = def_loc.flavor_id AND def_loc.locale_code = N'en-US'
 WHERE l.is_active = 1;
+GO
 
 -- 7. Localized Mapper Flavor Fields Metadata View (Customized field subset per flavor)
 CREATE OR ALTER VIEW vw_x_mapper_flavor_fields_localized AS
@@ -141,6 +147,7 @@ LEFT JOIN x_mapper_flavor_field_locales req_loc
 LEFT JOIN x_mapper_flavor_field_locales def_loc 
     ON mff.id = def_loc.field_id AND def_loc.locale_code = N'en-US'
 WHERE l.is_active = 1;
+GO
 
 -- 8. Localized Dynamic Forms Metadata View (Includes visible_clause and flavor references)
 CREATE OR ALTER VIEW vw_x_forms_localized AS
@@ -171,6 +178,7 @@ LEFT JOIN x_form_locales req_loc
 LEFT JOIN x_form_locales def_loc 
     ON f.id = def_loc.form_id AND def_loc.locale_code = N'en-US'
 WHERE l.is_active = 1;
+GO
 
 -- 9. Localized Page-to-Forms Junction View (Includes page-specific visible_clause)
 CREATE OR ALTER VIEW vw_x_page_forms_localized AS
@@ -200,6 +208,7 @@ LEFT JOIN vw_x_pages_localized vp
 LEFT JOIN vw_x_forms_localized vf 
     ON f.id = vf.form_guid AND vf.requested_locale = l.locale_code
 WHERE pf.is_active = 1 AND l.is_active = 1;
+GO
 
 -- 10. Localized Form Fields Metadata View
 CREATE OR ALTER VIEW vw_x_form_fields_localized AS
@@ -227,6 +236,7 @@ LEFT JOIN x_form_field_locales req_loc
 LEFT JOIN x_form_field_locales def_loc 
     ON ff.id = def_loc.field_id AND def_loc.locale_code = N'en-US'
 WHERE l.is_active = 1;
+GO
 
 -- 11. Localized Form Field Validators Metadata View
 CREATE OR ALTER VIEW vw_x_form_field_validators_localized AS
@@ -244,6 +254,7 @@ LEFT JOIN x_form_field_validator_locales req_loc
 LEFT JOIN x_form_field_validator_locales def_loc 
     ON v.id = def_loc.validator_id AND def_loc.locale_code = N'en-US'
 WHERE l.is_active = 1;
+GO
 
 -- 12. Localized Form Field Options Metadata View
 CREATE OR ALTER VIEW vw_x_form_field_options_localized AS
@@ -262,3 +273,4 @@ LEFT JOIN x_form_field_option_locales req_loc
 LEFT JOIN x_form_field_option_locales def_loc 
     ON o.id = def_loc.option_id AND def_loc.locale_code = N'en-US'
 WHERE l.is_active = 1;
+GO
