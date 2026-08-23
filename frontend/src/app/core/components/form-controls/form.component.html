@@ -1,0 +1,62 @@
+<div class="gp-am-form-container">
+  <div *ngIf="formCaption || schema?.description || schema?.formInfo" class="form-header">
+    <h3 *ngIf="formCaption" class="form-title">
+      {{ formCaption }}
+      <span class="mode-badge" [class.editable]="effectiveIsEditable" [class.readonly]="!effectiveIsEditable">
+        <mat-icon style="font-size: 14px; width: 14px; height: 14px;">
+          {{ effectiveIsEditable ? 'edit' : 'lock' }}
+        </mat-icon>
+        {{ effectiveIsEditable ? 'Editable (Left Labels)' : 'Read-Only (Top Labels)' }}
+      </span>
+    </h3>
+    <p *ngIf="schema?.description" class="form-description">{{ schema?.description }}</p>
+    <div *ngIf="schema?.formInfo" class="form-info-banner">
+      <mat-icon style="font-size: 16px; width: 16px; height: 16px;">info</mat-icon>
+      <span>{{ schema?.formInfo }}</span>
+    </div>
+  </div>
+
+  <form [formGroup]="formGroup" (ngSubmit)="onSubmit()" *ngIf="formGroup">
+    <div class="form-grid">
+      <div
+        *ngFor="let field of effectiveFields"
+        class="form-col"
+        [class.col-12]="!field.gridCols || field.gridCols === 12"
+        [class.col-6]="field.gridCols === 6"
+        [class.col-4]="field.gridCols === 4"
+        [class.col-3]="field.gridCols === 3"
+      >
+        <gp-am-form-field
+          [config]="field"
+          [formGroup]="formGroup"
+          [isEditable]="effectiveIsEditable"
+          [labelPosition]="effectiveLabelPosition"
+          (valueEmitted)="onFieldEmitted($event)"
+        ></gp-am-form-field>
+      </div>
+    </div>
+
+    <div class="form-actions">
+      <button
+        *ngIf="showResetButton && effectiveIsEditable"
+        type="button"
+        mat-button
+        class="reset-btn"
+        (click)="onReset()"
+        [disabled]="disabled"
+      >
+        Reset
+      </button>
+
+      <button
+        type="submit"
+        mat-raised-button
+        class="submit-btn"
+        [disabled]="disabled"
+      >
+        <mat-icon>{{ effectiveIsEditable ? 'check_circle' : 'visibility' }}</mat-icon>
+        {{ effectiveIsEditable ? submitButtonText : 'View Form' }}
+      </button>
+    </div>
+  </form>
+</div>

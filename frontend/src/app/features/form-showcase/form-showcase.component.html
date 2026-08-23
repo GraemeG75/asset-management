@@ -1,0 +1,136 @@
+<div class="showcase-container">
+  <div class="showcase-header">
+    <h1>
+      <mat-icon>web</mat-icon>
+      Page Info & Metadata Form Architecture
+    </h1>
+    <p>
+      Two-step metadata flow: Page request returns page details & available forms list. Individual form requests return caption, form info, and component field metadata.
+    </p>
+  </div>
+
+  <div class="controls-bar">
+    <div class="control-group">
+      <span class="control-label">
+        <mat-icon>dashboard</mat-icon>
+        Step 1: Select Page:
+      </span>
+      <mat-form-field appearance="outline" style="width: 260px; margin-bottom: -1.25em;">
+        <mat-select [ngModel]="selectedPageId" (ngModelChange)="onPageIdChange($event)">
+          <mat-option *ngFor="let p of availablePages" [value]="p.pageId">
+            {{ p.title }}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+    </div>
+
+    <div class="control-group" *ngIf="activePageInfo?.forms">
+      <span class="control-label">
+        <mat-icon>assignment</mat-icon>
+        Step 2: Select Form on Page:
+      </span>
+      <mat-form-field appearance="outline" style="width: 280px; margin-bottom: -1.25em;">
+        <mat-select [ngModel]="selectedFormId" (ngModelChange)="onFormIdChange($event)">
+          <mat-option *ngFor="let f of activePageInfo?.forms" [value]="f.formId">
+            {{ f.caption }}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+    </div>
+
+    <div class="control-group">
+      <span class="control-label">
+        <mat-icon>tune</mat-icon>
+        Form Mode Rule:
+      </span>
+      <div class="mode-toggle-group">
+        <button
+          type="button"
+          class="toggle-btn editable"
+          [class.active]="isEditable"
+          (click)="setEditable(true)"
+        >
+          <mat-icon>edit</mat-icon>
+          Editable (Left Labels)
+        </button>
+        <button
+          type="button"
+          class="toggle-btn readonly"
+          [class.active]="!isEditable"
+          (click)="setEditable(false)"
+        >
+          <mat-icon>lock</mat-icon>
+          Read-Only (Top Labels)
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="layout-grid">
+    <div class="form-render-panel">
+      <gp-am-form
+        *ngIf="activeSchema"
+        [schema]="activeSchema"
+        [isEditable]="isEditable"
+        (formSubmit)="onFormSubmit($event)"
+        (formValueChange)="onFormValueChange($event)"
+        (fieldValueEmitted)="onFieldValueEmitted($event)"
+      ></gp-am-form>
+    </div>
+
+    <div class="preview-panel">
+      <div class="panel-card">
+        <div class="panel-header">
+          <h4 class="panel-title">
+            <mat-icon>article</mat-icon>
+            Page Info Response (Step 1)
+          </h4>
+        </div>
+        <pre class="code-block" style="color: #a7f3d0;">{{ jsonPageInfo }}</pre>
+      </div>
+
+      <div class="panel-card">
+        <div class="panel-header">
+          <h4 class="panel-title">
+            <mat-icon>code</mat-icon>
+            Live Emitted Form State (JSON)
+          </h4>
+        </div>
+        <pre class="code-block">{{ jsonFormValue }}</pre>
+      </div>
+
+      <div class="panel-card" *ngIf="formSubmittedValue">
+        <div class="panel-header">
+          <h4 class="panel-title">
+            <mat-icon>task_alt</mat-icon>
+            Submitted Form Payload
+          </h4>
+        </div>
+        <pre class="code-block" style="color: #4ade80;">{{ jsonSubmittedValue }}</pre>
+      </div>
+
+      <div class="panel-card">
+        <div class="panel-header">
+          <h4 class="panel-title">
+            <mat-icon>stream</mat-icon>
+            Child Input Component Emission Stream
+          </h4>
+        </div>
+        <div class="log-list" *ngIf="emittedEventsLog.length > 0">
+          <div *ngFor="let log of emittedEventsLog" class="log-item">
+            <div>
+              <span class="log-key">[{{ log.timestamp }}] {{ log.key }}:</span>
+              <span class="log-val"> {{ log.value | json }}</span>
+            </div>
+            <span class="status-badge" [class.valid]="log.valid" [class.invalid]="!log.valid">
+              {{ log.valid ? 'Valid' : 'Invalid' }}
+            </span>
+          </div>
+        </div>
+        <p *ngIf="emittedEventsLog.length === 0" style="color: #94a3b8; font-size: 0.85rem; margin: 0;">
+          Interact with any field above to observe live value emission to parent form.
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
