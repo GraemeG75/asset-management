@@ -43,7 +43,7 @@ namespace AssetManagement.Tests
             Assert.NotNull(response);
             Assert.NotNull(response.Token);
             Assert.Equal("admin@assetmgmt.io", response.User.Email);
-            Assert.Equal("admin", response.User.Role);
+            Assert.Equal(1, response.User.Role);
         }
 
         [Fact]
@@ -81,7 +81,7 @@ namespace AssetManagement.Tests
                 FirstName = "Test",
                 LastName = "User",
                 Email = "test@assetmgmt.io",
-                Role = "user",
+                Role = 4,
                 Provider = "local"
             };
 

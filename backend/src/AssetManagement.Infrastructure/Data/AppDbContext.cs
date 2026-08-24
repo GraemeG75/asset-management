@@ -27,7 +27,7 @@ namespace AssetManagement.Infrastructure.Data
                 entity.Ignore(u => u.Name);
                 entity.Property(u => u.Email).HasColumnName("email").HasMaxLength(256).IsRequired();
                 entity.Property(u => u.PasswordHash).HasColumnName("password_hash").HasMaxLength(512);
-                entity.Property(u => u.Role).HasColumnName("role").HasMaxLength(32).HasDefaultValue("user");
+                entity.Property(u => u.Role).HasColumnName("role").HasDefaultValue(4);
                 entity.Property(u => u.Provider).HasColumnName("provider").HasMaxLength(32).HasDefaultValue("local");
                 entity.Property(u => u.AvatarUrl).HasColumnName("avatar_url").HasMaxLength(512);
                 entity.Property(u => u.PreferredLanguage).HasColumnName("preferred_language").HasMaxLength(10).HasDefaultValue("en-US");
@@ -46,7 +46,7 @@ namespace AssetManagement.Infrastructure.Data
                 FirstName = "Admin",
                 LastName = "User",
                 Email = "admin@assetmgmt.io",
-                Role = "admin",
+                Role = 1,
                 Provider = "local",
                 AvatarUrl = "https://api.dicebear.com/7.x/bottts/svg?seed=admin%40assetmgmt.io",
                 PreferredLanguage = "en-US",
@@ -61,7 +61,7 @@ namespace AssetManagement.Infrastructure.Data
                 FirstName = "Manager",
                 LastName = "User",
                 Email = "manager@assetmgmt.io",
-                Role = "manager",
+                Role = 2,
                 Provider = "local",
                 AvatarUrl = "https://api.dicebear.com/7.x/bottts/svg?seed=manager%40assetmgmt.io",
                 PreferredLanguage = "en-US",
@@ -76,7 +76,7 @@ namespace AssetManagement.Infrastructure.Data
                 FirstName = "Standard",
                 LastName = "User",
                 Email = "user@assetmgmt.io",
-                Role = "user",
+                Role = 4,
                 Provider = "local",
                 AvatarUrl = "https://api.dicebear.com/7.x/bottts/svg?seed=user%40assetmgmt.io",
                 PreferredLanguage = "en-US",

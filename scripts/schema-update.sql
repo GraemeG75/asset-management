@@ -313,12 +313,18 @@ BEGIN
         last_name NVARCHAR(64) NOT NULL,
         email NVARCHAR(256) NOT NULL UNIQUE,
         password_hash NVARCHAR(512) NOT NULL,
-        role NVARCHAR(32) NOT NULL DEFAULT N'user',
+        role INT NOT NULL DEFAULT 4,
         provider NVARCHAR(32) NOT NULL DEFAULT N'local',
         avatar_url NVARCHAR(512) NULL,
         preferred_language NVARCHAR(10) NOT NULL DEFAULT N'en-US',
         created_at DATETIMEOFFSET NOT NULL DEFAULT SYSDATETIMEOFFSET()
     );
+END
+ELSE IF EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('users') AND name = 'role' AND system_type_id = TYPE_ID('nvarchar'))
+BEGIN
+    ALTER TABLE users DROP CONSTRAINT IF EXISTS DF__users__role;
+    ALTER TABLE users ALTER COLUMN role INT NOT NULL;
+    ALTER TABLE users ADD CONSTRAINT DF_users_role DEFAULT 4 FOR role;
 END;
 GO
 

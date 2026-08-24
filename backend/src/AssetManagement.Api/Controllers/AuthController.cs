@@ -63,7 +63,7 @@ namespace AssetManagement.Api.Controllers
             {
                 bool isManager = request.Email.Contains("admin") || request.Email.Contains("manager");
                 bool isAdmin = request.Email.Contains("admin");
-                string role = isAdmin ? "admin" : (isManager ? "manager" : "user");
+                int role = isAdmin ? 1 : (isManager ? 2 : 4);
                 string emailUsername = request.Email.Split('@')[0];
                 string name = emailUsername.Replace('.', ' ');
 
@@ -123,7 +123,7 @@ namespace AssetManagement.Api.Controllers
             {
                 bool isManager = email.Contains("admin") || email.Contains("corp") || email.Contains("microsoft");
                 bool isAdmin = email.Contains("admin");
-                string role = isAdmin ? "admin" : (isManager ? "manager" : "user");
+                int role = isAdmin ? 1 : (isManager ? 2 : 4);
                 string emailUsername = email.Split('@')[0];
                 string name = emailUsername.Replace('.', ' ');
 

@@ -102,7 +102,7 @@ namespace AssetManagement.Api.Controllers
                 UserId = "f47ac10b-58cc-4372-a567-0e02b2c3d479",
                 UserName = "Sarah Connor",
                 UserEmail = "s.connor@enterprise.com",
-                Role = "Senior Asset Manager",
+                Role = 2,
                 ProfileNavLinks = profileNavLinks,
                 SiteNavLinks = siteNavLinks,
                 InboxCount = 4,

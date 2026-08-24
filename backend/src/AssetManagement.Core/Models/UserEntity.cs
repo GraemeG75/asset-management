@@ -44,7 +44,7 @@ namespace AssetManagement.Core.Models
         public string? PasswordHash { get; set; }
 
         [Column("role")]
-        public string Role { get; set; } = "user"; // admin, manager, user
+        public int Role { get; set; } = 4; // 1 = Admin, 2 = Manager, 3 = Compliance Officer, 4 = Standard User, 5 = Read Only
 
         [Column("provider")]
         public string Provider { get; set; } = "local"; // local, google, azure, github

@@ -55,4 +55,26 @@ export class App {
     };
     return iconMap[iconName] || iconName;
   }
+
+  getRoleLabel(roleId?: number): string {
+    const roleMap: Record<number, string> = {
+      1: 'Administrator',
+      2: 'Asset Manager',
+      3: 'Compliance Officer',
+      4: 'Standard User',
+      5: 'Read Only'
+    };
+    return roleMap[roleId ?? 4] || 'Standard User';
+  }
+
+  getRoleClass(roleId?: number): string {
+    const classMap: Record<number, string> = {
+      1: 'role-admin',
+      2: 'role-manager',
+      3: 'role-compliance',
+      4: 'role-user',
+      5: 'role-readonly'
+    };
+    return classMap[roleId ?? 4] || 'role-user';
+  }
 }

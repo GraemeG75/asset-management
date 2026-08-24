@@ -230,9 +230,9 @@ GO
 -- 9. Seed Initial Demo Users
 MERGE INTO users AS target
 USING (VALUES 
-    (CAST('f81d4fae-7dec-11d0-a765-00a0c91e6bf6' AS UNIQUEIDENTIFIER), N'admin', N'Admin', N'User', N'admin@assetmgmt.io', N'AQAAAAIAAYagAAAAEG3cE3sB9f7z8x0y1z2a3b4c5d6e7f8g9h0i1j2k3l4m5n6o', N'admin', N'local', N'https://api.dicebear.com/7.x/bottts/svg?seed=admin%40assetmgmt.io', N'en-US'),
-    (CAST('a1b2c3d4-e5f6-4789-8012-3456789abcde' AS UNIQUEIDENTIFIER), N'manager', N'Manager', N'User', N'manager@assetmgmt.io', N'AQAAAAIAAYagAAAAEG3cE3sB9f7z8x0y1z2a3b4c5d6e7f8g9h0i1j2k3l4m5n6o', N'manager', N'local', N'https://api.dicebear.com/7.x/bottts/svg?seed=manager%40assetmgmt.io', N'en-US'),
-    (CAST('b2c3d4e5-f6a7-4890-9123-456789abcdef' AS UNIQUEIDENTIFIER), N'user', N'Standard', N'User', N'user@assetmgmt.io', N'AQAAAAIAAYagAAAAEG3cE3sB9f7z8x0y1z2a3b4c5d6e7f8g9h0i1j2k3l4m5n6o', N'user', N'local', N'https://api.dicebear.com/7.x/bottts/svg?seed=user%40assetmgmt.io', N'en-US')
+    (CAST('f81d4fae-7dec-11d0-a765-00a0c91e6bf6' AS UNIQUEIDENTIFIER), N'admin', N'Admin', N'User', N'admin@assetmgmt.io', N'AQAAAAIAAYagAAAAEG3cE3sB9f7z8x0y1z2a3b4c5d6e7f8g9h0i1j2k3l4m5n6o', 1, N'local', N'https://api.dicebear.com/7.x/bottts/svg?seed=admin%40assetmgmt.io', N'en-US'),
+    (CAST('a1b2c3d4-e5f6-4789-8012-3456789abcde' AS UNIQUEIDENTIFIER), N'manager', N'Manager', N'User', N'manager@assetmgmt.io', N'AQAAAAIAAYagAAAAEG3cE3sB9f7z8x0y1z2a3b4c5d6e7f8g9h0i1j2k3l4m5n6o', 2, N'local', N'https://api.dicebear.com/7.x/bottts/svg?seed=manager%40assetmgmt.io', N'en-US'),
+    (CAST('b2c3d4e5-f6a7-4890-9123-456789abcdef' AS UNIQUEIDENTIFIER), N'user', N'Standard', N'User', N'user@assetmgmt.io', N'AQAAAAIAAYagAAAAEG3cE3sB9f7z8x0y1z2a3b4c5d6e7f8g9h0i1j2k3l4m5n6o', 4, N'local', N'https://api.dicebear.com/7.x/bottts/svg?seed=user%40assetmgmt.io', N'en-US')
 ) AS source (id, username, first_name, last_name, email, password_hash, role, provider, avatar_url, preferred_language)
 ON target.email = source.email
 WHEN MATCHED THEN 

@@ -13,7 +13,7 @@ export interface User {
   lastName?: string;
   name: string;
   email: string;
-  role: 'admin' | 'manager' | 'user';
+  role: number;
   provider?: 'local' | SsoProviderId;
   avatarUrl?: string;
   preferredLanguage?: string;
@@ -56,7 +56,7 @@ export interface JwtPayload {
   sub: string;
   name: string;
   email: string;
-  role: 'admin' | 'manager' | 'user';
+  role: number | string;
   provider?: 'local' | SsoProviderId;
   avatarUrl?: string;
   iat: number;

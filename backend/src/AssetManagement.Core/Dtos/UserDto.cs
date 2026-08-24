@@ -8,7 +8,7 @@ namespace AssetManagement.Core.Dtos
         string LastName,
         string Name,
         string Email,
-        string Role,
+        int Role,
         string Provider,
         string? AvatarUrl,
         string PreferredLanguage,

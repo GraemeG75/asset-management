@@ -68,7 +68,7 @@ export interface UserBootstrapData {
   userId: string;
   userName: string;
   userEmail: string;
-  role: string;
+  role: number;
   profileNavLinks: ProfileNavLink[];
   siteNavLinks: SiteNavLink[];
   inboxCount: number;

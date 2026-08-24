@@ -33,7 +33,7 @@ namespace AssetManagement.Infrastructure.Services
                 new Claim(JwtRegisteredClaimNames.Sub, user.Id),
                 new Claim(JwtRegisteredClaimNames.Name, user.Name),
                 new Claim(JwtRegisteredClaimNames.Email, user.Email),
-                new Claim("role", user.Role),
+                new Claim("role", user.Role.ToString()),
                 new Claim("provider", user.Provider),
                 new Claim("avatarUrl", user.AvatarUrl ?? string.Empty),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())

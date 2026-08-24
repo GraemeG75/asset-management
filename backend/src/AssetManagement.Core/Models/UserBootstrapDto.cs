@@ -5,7 +5,7 @@ namespace AssetManagement.Core.Models
         public string UserId { get; set; } = string.Empty;
         public string UserName { get; set; } = string.Empty;
         public string UserEmail { get; set; } = string.Empty;
-        public string Role { get; set; } = "Asset Manager";
+        public int Role { get; set; } = 2;
         public List<ProfileNavLinkDto> ProfileNavLinks { get; set; } = new List<ProfileNavLinkDto>();
         public List<SiteNavLinkDto> SiteNavLinks { get; set; } = new List<SiteNavLinkDto>();
         public int InboxCount { get; set; }

@@ -24,49 +24,50 @@ export class UserService {
   readonly isLoggedIn = computed<boolean>(() => !!this.currentUser());
   readonly userName = computed<string>(() => this.currentUser()?.name ?? 'Guest');
   readonly userEmail = computed<string>(() => this.currentUser()?.email ?? '');
-  readonly userRole = computed<string>(() => this.currentUser()?.role ?? 'user');
+  readonly userRole = computed<number>(() => this.currentUser()?.role ?? 4);
+ 
+   readonly sessionInfo = computed<SessionInfo>(() => ({
+     isAuthenticated: this.isLoggedIn(),
+     user: this.currentUser(),
+     token: this.jwtToken(),
+     loginTime: null,
+     expiresAt: null,
+     remembered: this.isRemembered()
+   }));
 
-  readonly sessionInfo = computed<SessionInfo>(() => ({
-    isAuthenticated: this.isLoggedIn(),
-    user: this.currentUser(),
-    token: this.jwtToken(),
-    loginTime: null,
-    expiresAt: null,
-    remembered: this.isRemembered()
-  }));
+   constructor() {
+     this.restoreSession();
+   }
 
-  constructor() {
-    this.restoreSession();
-  }
+   /**
+    * Restores session state from localStorage or sessionStorage
+    */
+   restoreSession(): boolean {
+     let token: string | null = null;
+     let remembered = false;
 
-  /**
-   * Restores session state from localStorage or sessionStorage
-   */
-  restoreSession(): boolean {
-    let token: string | null = null;
-    let remembered = false;
+     if (typeof localStorage !== 'undefined') {
+       token = localStorage.getItem(TOKEN_KEY);
+       if (token) remembered = true;
+     }
+     if (!token && typeof sessionStorage !== 'undefined') {
+       token = sessionStorage.getItem(TOKEN_KEY);
+     }
 
-    if (typeof localStorage !== 'undefined') {
-      token = localStorage.getItem(TOKEN_KEY);
-      if (token) remembered = true;
-    }
-    if (!token && typeof sessionStorage !== 'undefined') {
-      token = sessionStorage.getItem(TOKEN_KEY);
-    }
-
-    if (token) {
-      const payload = this.decodeJwtToken(token);
-      if (payload && payload.exp * 1000 > Date.now()) {
-        this.jwtToken.set(token);
-        this.isRemembered.set(remembered);
-        const nameParts = payload.name ? payload.name.trim().split(' ') : [];
-        this.currentUser.set({
-          id: payload.sub,
-          firstName: nameParts[0] || payload.name,
-          lastName: nameParts.slice(1).join(' ') || '',
-          name: payload.name,
-          email: payload.email,
-          role: payload.role,
+     if (token) {
+       const payload = this.decodeJwtToken(token);
+       if (payload && payload.exp * 1000 > Date.now()) {
+         this.jwtToken.set(token);
+         this.isRemembered.set(remembered);
+         const nameParts = payload.name ? payload.name.trim().split(' ') : [];
+         const userRoleNum = typeof payload.role === 'number' ? payload.role : parseInt(String(payload.role || '4'), 10);
+         this.currentUser.set({
+           id: payload.sub,
+           firstName: nameParts[0] || payload.name,
+           lastName: nameParts.slice(1).join(' ') || '',
+           name: payload.name,
+           email: payload.email,
+           role: isNaN(userRoleNum) ? 4 : userRoleNum,
           provider: payload.provider || 'local',
           avatarUrl: payload.avatarUrl || `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(payload.email)}`
         });

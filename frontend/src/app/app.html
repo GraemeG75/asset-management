@@ -26,8 +26,8 @@
             <span class="user-name">{{ userService.userName() }}</span>
             <span class="user-email">{{ userService.userEmail() }}</span>
           </div>
-          <span class="role-pill" [class]="userService.userRole()">
-            {{ userService.userRole() }}
+          <span class="role-pill" [class]="getRoleClass(userService.userRole())">
+            {{ getRoleLabel(userService.userRole()) }}
           </span>
           <mat-icon class="dropdown-chevron">expand_more</mat-icon>
         </div>
