@@ -241,3 +241,82 @@ WHEN NOT MATCHED THEN
     INSERT (id, username, first_name, last_name, email, password_hash, role, provider, avatar_url, preferred_language)
     VALUES (source.id, source.username, source.first_name, source.last_name, source.email, source.password_hash, source.role, source.provider, source.avatar_url, source.preferred_language);
 GO
+
+UPDATE users
+SET password_hash = N'AQAAAAIAAYagAAAAEDVD/SoBpvBDvNsHQFW+62i+vTPczy+5ZIGeGAz3YA1K3PA0eFUT+u7H/nZcw7ReRw=='
+WHERE username = N'admin' OR email = N'admin@assetmgmt.io';
+GO
+
+-- 10. Seed Pick Lists Master Definition & User Roles Items
+MERGE INTO x_pick_lists AS target
+USING (VALUES 
+    (CAST('3a4b5c6d-7e8f-4901-a234-56789abcdef0' AS UNIQUEIDENTIFIER), 
+     N'user_roles', 
+     N'SELECT item_value, display_value FROM vw_x_pick_list_values_localized WHERE list_name = N''user_roles'' AND requested_locale = @locale AND is_active = 1 ORDER BY display_order', 
+     N'SELECT item_value, display_value, is_active FROM vw_x_pick_list_values_localized WHERE list_name = N''user_roles'' AND requested_locale = @locale ORDER BY display_order', 
+     N'SELECT item_value, display_value FROM vw_x_pick_list_values_localized WHERE list_name = N''user_roles'' AND item_value = @item_value AND requested_locale = @locale', 
+     N'System User Roles Pick List')
+) AS source (id, list_name, sql_current_values, sql_all_values, sql_single_value, description)
+ON target.list_name = source.list_name
+WHEN MATCHED THEN 
+    UPDATE SET sql_current_values = source.sql_current_values, sql_all_values = source.sql_all_values, sql_single_value = source.sql_single_value, description = source.description
+WHEN NOT MATCHED THEN 
+    INSERT (id, list_name, sql_current_values, sql_all_values, sql_single_value, description)
+    VALUES (source.id, source.list_name, source.sql_current_values, source.sql_all_values, source.sql_single_value, source.description);
+GO
+
+-- Seed Pick List Items for User Roles
+MERGE INTO x_pick_list_items AS target
+USING (VALUES 
+    (CAST('11111111-2222-3333-4444-555555555501' AS UNIQUEIDENTIFIER), CAST('3a4b5c6d-7e8f-4901-a234-56789abcdef0' AS UNIQUEIDENTIFIER), 1, N'Administrator', 1, 1),
+    (CAST('11111111-2222-3333-4444-555555555502' AS UNIQUEIDENTIFIER), CAST('3a4b5c6d-7e8f-4901-a234-56789abcdef0' AS UNIQUEIDENTIFIER), 2, N'Asset Manager', 2, 1),
+    (CAST('11111111-2222-3333-4444-555555555503' AS UNIQUEIDENTIFIER), CAST('3a4b5c6d-7e8f-4901-a234-56789abcdef0' AS UNIQUEIDENTIFIER), 3, N'Compliance Officer', 3, 1),
+    (CAST('11111111-2222-3333-4444-555555555504' AS UNIQUEIDENTIFIER), CAST('3a4b5c6d-7e8f-4901-a234-56789abcdef0' AS UNIQUEIDENTIFIER), 4, N'Standard User', 4, 1),
+    (CAST('11111111-2222-3333-4444-555555555505' AS UNIQUEIDENTIFIER), CAST('3a4b5c6d-7e8f-4901-a234-56789abcdef0' AS UNIQUEIDENTIFIER), 5, N'Read Only', 5, 1)
+) AS source (id, list_id, item_value, default_display_value, display_order, is_active)
+ON target.list_id = source.list_id AND target.item_value = source.item_value
+WHEN MATCHED THEN 
+    UPDATE SET default_display_value = source.default_display_value, display_order = source.display_order, is_active = source.is_active
+WHEN NOT MATCHED THEN 
+    INSERT (id, list_id, item_value, default_display_value, display_order, is_active)
+    VALUES (source.id, source.list_id, source.item_value, source.default_display_value, source.display_order, source.is_active);
+GO
+
+-- Seed Pick List Item Locales for User Roles
+MERGE INTO x_pick_list_item_locales AS target
+USING (VALUES 
+    -- en-US
+    (CAST('11111111-2222-3333-4444-555555555501' AS UNIQUEIDENTIFIER), N'en-US', N'Administrator'),
+    (CAST('11111111-2222-3333-4444-555555555502' AS UNIQUEIDENTIFIER), N'en-US', N'Asset Manager'),
+    (CAST('11111111-2222-3333-4444-555555555503' AS UNIQUEIDENTIFIER), N'en-US', N'Compliance Officer'),
+    (CAST('11111111-2222-3333-4444-555555555504' AS UNIQUEIDENTIFIER), N'en-US', N'Standard User'),
+    (CAST('11111111-2222-3333-4444-555555555505' AS UNIQUEIDENTIFIER), N'en-US', N'Read Only'),
+
+    -- es-ES
+    (CAST('11111111-2222-3333-4444-555555555501' AS UNIQUEIDENTIFIER), N'es-ES', N'Administrador'),
+    (CAST('11111111-2222-3333-4444-555555555502' AS UNIQUEIDENTIFIER), N'es-ES', N'Gestor de Activos'),
+    (CAST('11111111-2222-3333-4444-555555555503' AS UNIQUEIDENTIFIER), N'es-ES', N'Oficial de Cumplimiento'),
+    (CAST('11111111-2222-3333-4444-555555555504' AS UNIQUEIDENTIFIER), N'es-ES', N'Usuario Estándar'),
+    (CAST('11111111-2222-3333-4444-555555555505' AS UNIQUEIDENTIFIER), N'es-ES', N'Sólo Lectura'),
+
+    -- fr-FR
+    (CAST('11111111-2222-3333-4444-555555555501' AS UNIQUEIDENTIFIER), N'fr-FR', N'Administrateur'),
+    (CAST('11111111-2222-3333-4444-555555555502' AS UNIQUEIDENTIFIER), N'fr-FR', N'Gestionnaire d''Actifs'),
+    (CAST('11111111-2222-3333-4444-555555555503' AS UNIQUEIDENTIFIER), N'fr-FR', N'Responsable de la Conformité'),
+    (CAST('11111111-2222-3333-4444-555555555504' AS UNIQUEIDENTIFIER), N'fr-FR', N'Utilisateur Standard'),
+    (CAST('11111111-2222-3333-4444-555555555505' AS UNIQUEIDENTIFIER), N'fr-FR', N'Lecture Seule'),
+
+    -- de-DE
+    (CAST('11111111-2222-3333-4444-555555555501' AS UNIQUEIDENTIFIER), N'de-DE', N'Administrator'),
+    (CAST('11111111-2222-3333-4444-555555555502' AS UNIQUEIDENTIFIER), N'de-DE', N'Asset-Manager'),
+    (CAST('11111111-2222-3333-4444-555555555503' AS UNIQUEIDENTIFIER), N'de-DE', N'Compliance-Beauftragter'),
+    (CAST('11111111-2222-3333-4444-555555555504' AS UNIQUEIDENTIFIER), N'de-DE', N'Standardbenutzer'),
+    (CAST('11111111-2222-3333-4444-555555555505' AS UNIQUEIDENTIFIER), N'de-DE', N'Nur Lesen')
+) AS source (item_id, locale_code, display_value)
+ON target.item_id = source.item_id AND target.locale_code = source.locale_code
+WHEN MATCHED THEN 
+    UPDATE SET display_value = source.display_value
+WHEN NOT MATCHED THEN 
+    INSERT (item_id, locale_code, display_value) VALUES (source.item_id, source.locale_code, source.display_value);
+GO
+

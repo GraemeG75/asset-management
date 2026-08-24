@@ -321,3 +321,42 @@ BEGIN
     );
 END;
 GO
+
+-- 15. Pick Lists Master Definition Table, Pick List Items Table & Locales Table
+IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'x_pick_lists')
+BEGIN
+    CREATE TABLE x_pick_lists (
+        id UNIQUEIDENTIFIER NOT NULL PRIMARY KEY DEFAULT NEWID(),
+        list_name NVARCHAR(64) NOT NULL UNIQUE,
+        sql_current_values NVARCHAR(MAX) NOT NULL,
+        sql_all_values NVARCHAR(MAX) NOT NULL,
+        sql_single_value NVARCHAR(MAX) NOT NULL,
+        description NVARCHAR(MAX) NULL,
+        created_at DATETIMEOFFSET NOT NULL DEFAULT SYSDATETIMEOFFSET()
+    );
+END;
+
+IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'x_pick_list_items')
+BEGIN
+    CREATE TABLE x_pick_list_items (
+        id UNIQUEIDENTIFIER NOT NULL PRIMARY KEY DEFAULT NEWID(),
+        list_id UNIQUEIDENTIFIER NOT NULL FOREIGN KEY REFERENCES x_pick_lists(id) ON DELETE CASCADE,
+        item_value INT NOT NULL,
+        default_display_value NVARCHAR(128) NOT NULL,
+        display_order INT NOT NULL DEFAULT 0,
+        is_active BIT NOT NULL DEFAULT 1,
+        CONSTRAINT UQ_x_pick_list_items_list_value UNIQUE (list_id, item_value)
+    );
+END;
+
+IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'x_pick_list_item_locales')
+BEGIN
+    CREATE TABLE x_pick_list_item_locales (
+        item_id UNIQUEIDENTIFIER NOT NULL FOREIGN KEY REFERENCES x_pick_list_items(id) ON DELETE CASCADE,
+        locale_code NVARCHAR(10) NOT NULL FOREIGN KEY REFERENCES x_locales(locale_code) ON DELETE CASCADE,
+        display_value NVARCHAR(128) NOT NULL,
+        CONSTRAINT PK_x_pick_list_item_locales PRIMARY KEY (item_id, locale_code)
+    );
+END;
+GO
+

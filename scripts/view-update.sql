@@ -274,3 +274,25 @@ LEFT JOIN x_form_field_option_locales def_loc
     ON o.id = def_loc.option_id AND def_loc.locale_code = N'en-US'
 WHERE l.is_active = 1;
 GO
+
+-- 13. Localized Pick List Values View
+CREATE OR ALTER VIEW vw_x_pick_list_values_localized AS
+SELECT 
+    pl.id AS list_id,
+    pl.list_name,
+    pli.id AS item_id,
+    pli.item_value,
+    l.locale_code AS requested_locale,
+    COALESCE(req_loc.display_value, def_loc.display_value, pli.default_display_value) AS display_value,
+    pli.display_order,
+    pli.is_active
+FROM x_pick_list_items pli
+INNER JOIN x_pick_lists pl ON pli.list_id = pl.id
+CROSS JOIN x_locales l
+LEFT JOIN x_pick_list_item_locales req_loc 
+    ON pli.id = req_loc.item_id AND req_loc.locale_code = l.locale_code
+LEFT JOIN x_pick_list_item_locales def_loc 
+    ON pli.id = def_loc.item_id AND def_loc.locale_code = N'en-US'
+WHERE l.is_active = 1;
+GO
+
