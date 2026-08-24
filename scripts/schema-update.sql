@@ -322,7 +322,23 @@ BEGIN
 END
 ELSE IF EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('users') AND name = 'role' AND system_type_id = TYPE_ID('nvarchar'))
 BEGIN
-    ALTER TABLE users DROP CONSTRAINT IF EXISTS DF__users__role;
+    DECLARE @ConstraintName NVARCHAR(256);
+    SELECT @ConstraintName = dc.name
+    FROM sys.default_constraints dc
+    JOIN sys.columns c ON dc.parent_object_id = c.object_id AND dc.parent_column_id = c.column_id
+    WHERE dc.parent_object_id = OBJECT_ID(N'users') AND c.name = N'role';
+
+    IF @ConstraintName IS NOT NULL
+    BEGIN
+        EXEC(N'ALTER TABLE users DROP CONSTRAINT [' + @ConstraintName + N']');
+    END;
+
+    -- Migrate legacy string values to integer representations prior to altering column type
+    UPDATE users SET role = N'1' WHERE role = N'admin';
+    UPDATE users SET role = N'2' WHERE role = N'manager';
+    UPDATE users SET role = N'3' WHERE role IN (N'compliance', N'compliance officer');
+    UPDATE users SET role = N'4' WHERE role = N'user' OR TRY_CAST(role AS INT) IS NULL;
+
     ALTER TABLE users ALTER COLUMN role INT NOT NULL;
     ALTER TABLE users ADD CONSTRAINT DF_users_role DEFAULT 4 FOR role;
 END;
