@@ -198,6 +198,13 @@ namespace AssetManagement.Infrastructure.Services
                     }
                 }
 
+                Guid? auditUserId = Guid.TryParse(_userContext.UserId, out Guid parsedId) ? parsedId : null;
+                user.DateUpdated = DateTime.UtcNow;
+                user.UpdatedById = auditUserId;
+
+                updatedData["date_updated"] = user.DateUpdated;
+                updatedData["updated_by_id"] = user.UpdatedById;
+
                 await _dbContext.SaveChangesAsync();
             }
 

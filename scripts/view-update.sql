@@ -66,7 +66,7 @@ SELECT
     COALESCE(req_loc.title, def_loc.title, p.page_key) AS title,
     COALESCE(req_loc.description, def_loc.description) AS description,
     p.category,
-    p.created_at
+    p.date_created
 FROM x_pages p
 CROSS JOIN x_locales l
 LEFT JOIN x_page_locales req_loc 
@@ -86,7 +86,7 @@ SELECT
     l.locale_code AS requested_locale,
     COALESCE(req_loc.display_name, def_loc.display_name, m.mapper_key) AS display_name,
     COALESCE(req_loc.description, def_loc.description) AS description,
-    m.created_at
+    m.date_created
 FROM x_mappers m
 CROSS JOIN x_locales l
 LEFT JOIN x_mapper_locales req_loc 
@@ -106,7 +106,7 @@ SELECT
     l.locale_code AS requested_locale,
     COALESCE(req_loc.display_name, def_loc.display_name, mf.flavor_key) AS display_name,
     COALESCE(req_loc.description, def_loc.description) AS description,
-    mf.created_at
+    mf.date_created
 FROM x_mapper_flavors mf
 JOIN x_mappers m ON mf.mapper_id = m.id
 CROSS JOIN x_locales l

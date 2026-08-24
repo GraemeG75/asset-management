@@ -171,7 +171,7 @@ namespace AssetManagement.Api.Controllers
 
         private static UserDto MapToUserDto(UserEntity user)
         {
-            return new UserDto(user.Id, user.FirstName, user.LastName, user.Name, user.Email, user.Role, user.Provider, user.AvatarUrl, user.PreferredLanguage, user.CreatedAt);
+            return new UserDto(user.Id, user.FirstName, user.LastName, user.Name, user.Email, user.Role, user.Provider, user.AvatarUrl, user.PreferredLanguage, user.DateCreated);
         }
     }
 }

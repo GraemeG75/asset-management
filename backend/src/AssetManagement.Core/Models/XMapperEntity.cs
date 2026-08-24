@@ -1,6 +1,8 @@
+using System;
+
 namespace AssetManagement.Core.Models
 {
-    public class XMapperEntity
+    public class XMapperEntity : IAuditEntity
     {
         public Guid MapperGuid { get; set; }
         public string MapperKey { get; set; } = string.Empty;
@@ -9,5 +11,9 @@ namespace AssetManagement.Core.Models
         public string RequestedLocale { get; set; } = "en-US";
         public string DisplayName { get; set; } = string.Empty;
         public string? Description { get; set; }
+        public DateTime DateCreated { get; set; } = DateTime.UtcNow;
+        public Guid? CreatedById { get; set; }
+        public DateTime? DateUpdated { get; set; }
+        public Guid? UpdatedById { get; set; }
     }
 }

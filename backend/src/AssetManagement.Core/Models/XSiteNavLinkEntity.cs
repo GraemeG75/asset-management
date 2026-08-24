@@ -1,6 +1,8 @@
+using System;
+
 namespace AssetManagement.Core.Models
 {
-    public class XSiteNavLinkEntity
+    public class XSiteNavLinkEntity : IAuditEntity
     {
         public Guid NavId { get; set; }
         public string LinkKey { get; set; } = string.Empty;
@@ -11,5 +13,9 @@ namespace AssetManagement.Core.Models
         public int? BadgeCount { get; set; }
         public string Category { get; set; } = "Main";
         public int DisplayOrder { get; set; }
+        public DateTime DateCreated { get; set; } = DateTime.UtcNow;
+        public Guid? CreatedById { get; set; }
+        public DateTime? DateUpdated { get; set; }
+        public Guid? UpdatedById { get; set; }
     }
 }

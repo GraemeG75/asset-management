@@ -1,6 +1,8 @@
+using System;
+
 namespace AssetManagement.Core.Models
 {
-    public class XFormEntity
+    public class XFormEntity : IAuditEntity
     {
         public Guid FormGuid { get; set; }
         public string FormKey { get; set; } = string.Empty;
@@ -19,5 +21,9 @@ namespace AssetManagement.Core.Models
         public string LabelPosition { get; set; } = "left";
         public int GridCols { get; set; } = 12;
         public bool ShowResetButton { get; set; } = true;
+        public DateTime DateCreated { get; set; } = DateTime.UtcNow;
+        public Guid? CreatedById { get; set; }
+        public DateTime? DateUpdated { get; set; }
+        public Guid? UpdatedById { get; set; }
     }
 }

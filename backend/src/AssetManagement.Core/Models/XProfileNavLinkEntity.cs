@@ -1,6 +1,8 @@
+using System;
+
 namespace AssetManagement.Core.Models
 {
-    public class XProfileNavLinkEntity
+    public class XProfileNavLinkEntity : IAuditEntity
     {
         public Guid NavId { get; set; }
         public string LinkKey { get; set; } = string.Empty;
@@ -11,5 +13,9 @@ namespace AssetManagement.Core.Models
         public string? Badge { get; set; }
         public string? BadgeColor { get; set; }
         public int DisplayOrder { get; set; }
+        public DateTime DateCreated { get; set; } = DateTime.UtcNow;
+        public Guid? CreatedById { get; set; }
+        public DateTime? DateUpdated { get; set; }
+        public Guid? UpdatedById { get; set; }
     }
 }

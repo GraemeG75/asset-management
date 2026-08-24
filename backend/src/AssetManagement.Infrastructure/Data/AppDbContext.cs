@@ -1,5 +1,8 @@
 using System;
+using System.Threading;
+using System.Threading.Tasks;
 using AssetManagement.Core.Models;
+using AssetManagement.Core.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -7,9 +10,62 @@ namespace AssetManagement.Infrastructure.Data
 {
     public class AppDbContext : DbContext
     {
+        private readonly IUserContext? _userContext;
+
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
 
+        public AppDbContext(DbContextOptions<AppDbContext> options, IUserContext userContext) : base(options)
+        {
+            _userContext = userContext;
+        }
+
         public DbSet<UserEntity> Users => Set<UserEntity>();
+
+        public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+        {
+            ApplyAuditInformation();
+            return base.SaveChangesAsync(cancellationToken);
+        }
+
+        public override int SaveChanges()
+        {
+            ApplyAuditInformation();
+            return base.SaveChanges();
+        }
+
+        private void ApplyAuditInformation()
+        {
+            Guid? currentUserId = null;
+            if (_userContext != null && !string.IsNullOrWhiteSpace(_userContext.UserId))
+            {
+                if (Guid.TryParse(_userContext.UserId, out Guid parsedId))
+                {
+                    currentUserId = parsedId;
+                }
+            }
+
+            DateTime now = DateTime.UtcNow;
+
+            foreach (var entry in ChangeTracker.Entries<IAuditEntity>())
+            {
+                if (entry.State == EntityState.Added)
+                {
+                    if (entry.Entity.DateCreated == default)
+                    {
+                        entry.Entity.DateCreated = now;
+                    }
+                    if (entry.Entity.CreatedById == null)
+                    {
+                        entry.Entity.CreatedById = currentUserId;
+                    }
+                }
+                else if (entry.State == EntityState.Modified)
+                {
+                    entry.Entity.DateUpdated = now;
+                    entry.Entity.UpdatedById = currentUserId;
+                }
+            }
+        }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -31,7 +87,10 @@ namespace AssetManagement.Infrastructure.Data
                 entity.Property(u => u.Provider).HasColumnName("provider").HasMaxLength(32).HasDefaultValue("local");
                 entity.Property(u => u.AvatarUrl).HasColumnName("avatar_url").HasMaxLength(512);
                 entity.Property(u => u.PreferredLanguage).HasColumnName("preferred_language").HasMaxLength(10).HasDefaultValue("en-US");
-                entity.Property(u => u.CreatedAt).HasColumnName("created_at");
+                entity.Property(u => u.DateCreated).HasColumnName("date_created");
+                entity.Property(u => u.CreatedById).HasColumnName("created_by_id");
+                entity.Property(u => u.DateUpdated).HasColumnName("date_updated");
+                entity.Property(u => u.UpdatedById).HasColumnName("updated_by_id");
 
                 entity.HasIndex(u => u.Email).IsUnique();
                 entity.HasIndex(u => u.Username).IsUnique();
@@ -50,7 +109,7 @@ namespace AssetManagement.Infrastructure.Data
                 Provider = "local",
                 AvatarUrl = "https://api.dicebear.com/7.x/bottts/svg?seed=admin%40assetmgmt.io",
                 PreferredLanguage = "en-US",
-                CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc)
+                DateCreated = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc)
             };
             admin.PasswordHash = hasher.HashPassword(admin, "password123");
 
@@ -65,7 +124,7 @@ namespace AssetManagement.Infrastructure.Data
                 Provider = "local",
                 AvatarUrl = "https://api.dicebear.com/7.x/bottts/svg?seed=manager%40assetmgmt.io",
                 PreferredLanguage = "en-US",
-                CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc)
+                DateCreated = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc)
             };
             manager.PasswordHash = hasher.HashPassword(manager, "password123");
 
@@ -80,7 +139,7 @@ namespace AssetManagement.Infrastructure.Data
                 Provider = "local",
                 AvatarUrl = "https://api.dicebear.com/7.x/bottts/svg?seed=user%40assetmgmt.io",
                 PreferredLanguage = "en-US",
-                CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc)
+                DateCreated = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc)
             };
             standard.PasswordHash = hasher.HashPassword(standard, "password123");
 

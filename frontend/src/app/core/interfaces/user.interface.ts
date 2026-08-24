@@ -10,5 +10,5 @@ export interface User {
   provider?: 'local' | SsoProviderId;
   avatarUrl?: string;
   preferredLanguage?: string;
-  createdAt?: string;
+  dateCreated?: string;
 }

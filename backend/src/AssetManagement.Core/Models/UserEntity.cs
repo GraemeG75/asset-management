@@ -5,7 +5,7 @@ using AssetManagement.Core.Generated.PickLists;
 namespace AssetManagement.Core.Models
 {
     [Table("users")]
-    public class UserEntity
+    public class UserEntity : IAuditEntity
     {
         [Column("id")]
         public string Id { get; set; } = Guid.NewGuid().ToString();
@@ -73,7 +73,16 @@ namespace AssetManagement.Core.Models
         [Column("preferred_language")]
         public string PreferredLanguage { get; set; } = "en-US";
 
-        [Column("created_at")]
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        [Column("date_created")]
+        public DateTime DateCreated { get; set; } = DateTime.UtcNow;
+
+        [Column("created_by_id")]
+        public Guid? CreatedById { get; set; }
+
+        [Column("date_updated")]
+        public DateTime? DateUpdated { get; set; }
+
+        [Column("updated_by_id")]
+        public Guid? UpdatedById { get; set; }
     }
 }

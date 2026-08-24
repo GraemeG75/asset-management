@@ -1,6 +1,8 @@
+using System;
+
 namespace AssetManagement.Core.Models
 {
-    public class XMapperFlavorFieldEntity
+    public class XMapperFlavorFieldEntity : IAuditEntity
     {
         public Guid FlavorFieldGuid { get; set; }
         public Guid FlavorId { get; set; }
@@ -20,5 +22,9 @@ namespace AssetManagement.Core.Models
         public int DisplayOrder { get; set; }
         public int GridCols { get; set; } = 12;
         public string? CustomCssClass { get; set; }
+        public DateTime DateCreated { get; set; } = DateTime.UtcNow;
+        public Guid? CreatedById { get; set; }
+        public DateTime? DateUpdated { get; set; }
+        public Guid? UpdatedById { get; set; }
     }
 }
