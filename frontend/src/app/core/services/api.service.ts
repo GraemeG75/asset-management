@@ -3,19 +3,14 @@ import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { finalize } from 'rxjs/operators';
 import { LoadingService } from './loading.service';
-import { User, LoginCredentials, AuthResponse, SsoProviderId, UpdateProfileRequest } from '../models/user.model';
+import { User, LoginCredentials, AuthResponse, SsoProviderId, DynamicFormData } from '../models/user.model';
 import { UserBootstrapData } from '../models/user-bootstrap.model';
 
-export interface TranslationResponse {
-  culture: string;
-  translations: Record<string, string>;
-}
+import { TranslationResponse } from '../interfaces/translation-response.interface';
+import { ApiRequestOptions } from '../interfaces/api-request-options.interface';
 
-export interface ApiRequestOptions {
-  headers?: HttpHeaders;
-  params?: HttpParams;
-  blockUi?: boolean;
-}
+export type { TranslationResponse } from '../interfaces/translation-response.interface';
+export type { ApiRequestOptions } from '../interfaces/api-request-options.interface';
 
 const BASE_URL = 'http://localhost:5233/api';
 
@@ -32,7 +27,8 @@ export const API_ENDPOINTS = {
   META_PAGES: `${BASE_URL}/meta/pages`,
   META_FORMS: `${BASE_URL}/meta/forms`,
   META_MAPPERS: `${BASE_URL}/meta/mappers`,
-  META_FLAVORS: `${BASE_URL}/meta/flavors`
+  META_FLAVORS: `${BASE_URL}/meta/flavors`,
+  FORM_SUBMIT: `${BASE_URL}/form-data/submit`
 } as const;
 
 @Injectable({
@@ -90,7 +86,7 @@ export class ApiService {
   /**
    * Updates user's entire profile (firstName, lastName, preferredLanguage, avatarUrl)
    */
-  updateProfile(profile: UpdateProfileRequest, options: ApiRequestOptions = {}): Observable<User> {
+  updateProfile(profile: DynamicFormData, options: ApiRequestOptions = {}): Observable<User> {
     return this.put<User>(API_ENDPOINTS.PROFILE, profile, options);
   }
 
@@ -126,6 +122,17 @@ export class ApiService {
   getAuthenticatedTranslations(culture: string, options: ApiRequestOptions = { blockUi: true }): Observable<TranslationResponse> {
     const params = (options.params ?? new HttpParams()).set('culture', culture);
     return this.get<TranslationResponse>(API_ENDPOINTS.TRANSLATIONS_AUTHENTICATED, { ...options, params });
+  }
+
+  // ==========================================
+  // GENERIC FORM SUBMISSION API METHOD
+  // ==========================================
+
+  /**
+   * Submits generic metadata form data payload to backend /api/form-data/submit
+   */
+  submitFormData<T = any>(submission: any, options: ApiRequestOptions = {}): Observable<T> {
+    return this.post<T>(API_ENDPOINTS.FORM_SUBMIT, submission, options);
   }
 
   // ==========================================

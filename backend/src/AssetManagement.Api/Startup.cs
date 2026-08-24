@@ -66,6 +66,11 @@ namespace AssetManagement.Api
             services.AddDbContext<AppDbContext>(options =>
                 options.UseInMemoryDatabase("AssetManagementDb"));
 
+            // Register HttpContextAccessor, SiteContext & UserContext
+            services.AddHttpContextAccessor();
+            services.AddScoped<ISiteContext, SiteContext>();
+            services.AddScoped<IUserContext, UserContext>();
+
             // Register Services from Infrastructure
             services.AddScoped<ITokenService, TokenService>();
             services.AddScoped<ITranslationService, TranslationService>();
@@ -77,6 +82,16 @@ namespace AssetManagement.Api
 
             services.AddSingleton<IDbConnectionFactory>(new SqlServerConnectionFactory(connectionString));
             services.AddScoped<IMetadataRepository, DapperMetadataRepository>();
+
+            // Register Generic Form Service & Form Type Strategy Handlers
+            services.AddScoped<IFormTypeHandler, AssetManagement.Infrastructure.Services.FormHandlers.StandardFormHandler>();
+            services.AddScoped<IFormTypeHandler, AssetManagement.Infrastructure.Services.FormHandlers.DetailFormHandler>();
+            services.AddScoped<IFormTypeHandler, AssetManagement.Infrastructure.Services.FormHandlers.GridFormHandler>();
+            services.AddScoped<IFormTypeHandler, AssetManagement.Infrastructure.Services.FormHandlers.SearchFormHandler>();
+            services.AddScoped<IFormTypeHandler, AssetManagement.Infrastructure.Services.FormHandlers.WidgetFormHandler>();
+            services.AddScoped<AssetManagement.Infrastructure.Services.FormHandlers.FormHandlerFactory>();
+            services.AddScoped<IMapperService, MapperService>();
+            services.AddScoped<IGenericFormService, GenericFormService>();
 
             // Configure JWT Authentication
             string secretKey = Configuration["JwtSettings:Secret"] 

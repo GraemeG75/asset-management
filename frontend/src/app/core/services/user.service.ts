@@ -2,7 +2,7 @@ import { Injectable, signal, computed, inject } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { map, tap } from 'rxjs/operators';
-import { User, LoginCredentials, SessionInfo, JwtPayload, AuthResponse, SsoProviderId, UpdateProfileRequest } from '../models/user.model';
+import { User, LoginCredentials, SessionInfo, JwtPayload, AuthResponse, SsoProviderId, DynamicFormData } from '../models/user.model';
 import { ApiService } from './api.service';
 
 const TOKEN_KEY = 'asset_mgmt_jwt_token';
@@ -137,7 +137,7 @@ export class UserService {
   /**
    * Updates full user profile (firstName, lastName, preferredLanguage, avatarUrl) via ApiService
    */
-  updateProfile(profile: UpdateProfileRequest): Observable<User> {
+  updateProfile(profile: DynamicFormData): Observable<User> {
     const token = this.jwtToken();
     let headers = new HttpHeaders();
     if (token) {

@@ -1,64 +1,8 @@
-export type SsoProviderId = 'google' | 'azure' | 'github';
-
-export interface SsoProvider {
-  id: SsoProviderId;
-  name: string;
-  icon: string;
-  color: string;
-}
-
-export interface User {
-  id: string;
-  firstName?: string;
-  lastName?: string;
-  name: string;
-  email: string;
-  role: number;
-  provider?: 'local' | SsoProviderId;
-  avatarUrl?: string;
-  preferredLanguage?: string;
-  createdAt?: string;
-}
-
-export interface UpdateProfileRequest {
-  firstName: string;
-  lastName: string;
-  preferredLanguage?: string;
-  avatarUrl?: string;
-}
-
-export interface UpdateEmailRequest {
-  newEmail: string;
-}
-
-export interface LoginCredentials {
-  email: string;
-  password?: string;
-  rememberMe?: boolean;
-}
-
-export interface AuthResponse {
-  user: User;
-  token: string;
-  expiresAt: number;
-}
-
-export interface SessionInfo {
-  isAuthenticated: boolean;
-  user: User | null;
-  token: string | null;
-  loginTime: number | null;
-  expiresAt: number | null;
-  remembered: boolean;
-}
-
-export interface JwtPayload {
-  sub: string;
-  name: string;
-  email: string;
-  role: number | string;
-  provider?: 'local' | SsoProviderId;
-  avatarUrl?: string;
-  iat: number;
-  exp: number;
-}
+export type { SsoProviderId } from '../types/sso-provider-id.type';
+export type { SsoProvider } from '../interfaces/sso-provider.interface';
+export type { User } from '../interfaces/user.interface';
+export type { DynamicFormData } from '../interfaces/dynamic-form-data.interface';
+export type { LoginCredentials } from '../interfaces/login-credentials.interface';
+export type { AuthResponse } from '../interfaces/auth-response.interface';
+export type { SessionInfo } from '../interfaces/session-info.interface';
+export type { JwtPayload } from '../interfaces/jwt-payload.interface';
