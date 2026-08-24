@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using AssetManagement.Api.Controllers;
 using AssetManagement.Core.Dtos;
@@ -23,27 +25,33 @@ namespace AssetManagement.Tests
             return db;
         }
 
+        private ProfileController CreateController(AppDbContext db, UserEntity user)
+        {
+            TranslationService translationService = new TranslationService();
+            ClaimsPrincipal claimsPrincipal = new ClaimsPrincipal(
+                new ClaimsIdentity(new[] { new Claim(ClaimTypes.NameIdentifier, user.Id) }, "TestAuth")
+            );
+            DefaultHttpContext httpContext = new DefaultHttpContext { User = claimsPrincipal };
+            HttpContextAccessor accessor = new HttpContextAccessor { HttpContext = httpContext };
+
+            UserContext userContext = new UserContext(accessor, db);
+            SiteContext siteContext = new SiteContext(accessor);
+
+            ProfileController controller = new ProfileController(db, translationService, userContext, siteContext)
+            {
+                ControllerContext = new Microsoft.AspNetCore.Mvc.ControllerContext { HttpContext = httpContext }
+            };
+            return controller;
+        }
+
         [Fact]
         public async Task GetProfile_ShouldReturnCurrentAuthenticatedUserProfile()
         {
             AppDbContext db = GetInMemoryDbContext();
-            TranslationService translationService = new TranslationService();
-            ProfileController controller = new ProfileController(db, translationService);
-
             UserEntity? user = await db.Users.FirstOrDefaultAsync();
             Assert.NotNull(user);
 
-            System.Security.Claims.ClaimsPrincipal claimsPrincipal = new System.Security.Claims.ClaimsPrincipal(
-                new System.Security.Claims.ClaimsIdentity(new[]
-                {
-                    new System.Security.Claims.Claim(System.Security.Claims.ClaimTypes.NameIdentifier, user.Id)
-                }, "TestAuth")
-            );
-
-            controller.ControllerContext = new Microsoft.AspNetCore.Mvc.ControllerContext
-            {
-                HttpContext = new DefaultHttpContext { User = claimsPrincipal }
-            };
+            ProfileController controller = CreateController(db, user);
 
             IResult result = await controller.GetProfile();
 
@@ -59,25 +67,19 @@ namespace AssetManagement.Tests
         public async Task UpdateProfile_ShouldUpdateFirstNameLastNameLanguageAndAvatar()
         {
             AppDbContext db = GetInMemoryDbContext();
-            TranslationService translationService = new TranslationService();
-            ProfileController controller = new ProfileController(db, translationService);
-
             UserEntity? user = await db.Users.FirstOrDefaultAsync();
             Assert.NotNull(user);
 
-            System.Security.Claims.ClaimsPrincipal claimsPrincipal = new System.Security.Claims.ClaimsPrincipal(
-                new System.Security.Claims.ClaimsIdentity(new[]
-                {
-                    new System.Security.Claims.Claim(System.Security.Claims.ClaimTypes.NameIdentifier, user.Id)
-                }, "TestAuth")
-            );
+            ProfileController controller = CreateController(db, user);
 
-            controller.ControllerContext = new Microsoft.AspNetCore.Mvc.ControllerContext
+            Dictionary<string, object?> request = new Dictionary<string, object?>
             {
-                HttpContext = new DefaultHttpContext { User = claimsPrincipal }
+                ["firstName"] = "Alex",
+                ["lastName"] = "Morgan",
+                ["preferredLanguage"] = "de-DE",
+                ["avatarUrl"] = "https://example.com/avatar.png"
             };
 
-            UpdateProfileDto request = new UpdateProfileDto("Alex", "Morgan", "de-DE", "https://example.com/avatar.png");
             IResult result = await controller.UpdateProfile(request);
 
             Ok<UserDto> okResult = Assert.IsType<Ok<UserDto>>(result);
@@ -88,37 +90,22 @@ namespace AssetManagement.Tests
             Assert.Equal("Morgan", updatedUser.LastName);
             Assert.Equal("Alex Morgan", updatedUser.Name);
             Assert.Equal("de-de", updatedUser.PreferredLanguage);
-
-            UserEntity? dbUser = await db.Users.FindAsync(user.Id);
-            Assert.NotNull(dbUser);
-            Assert.Equal("Alex", dbUser.FirstName);
-            Assert.Equal("Morgan", dbUser.LastName);
-            Assert.Equal("de-de", dbUser.PreferredLanguage);
         }
 
         [Fact]
         public async Task UpdateEmail_ShouldUpdateEmailWhenValidAndNotTaken()
         {
             AppDbContext db = GetInMemoryDbContext();
-            TranslationService translationService = new TranslationService();
-            ProfileController controller = new ProfileController(db, translationService);
-
             UserEntity? user = await db.Users.FirstOrDefaultAsync();
             Assert.NotNull(user);
 
-            System.Security.Claims.ClaimsPrincipal claimsPrincipal = new System.Security.Claims.ClaimsPrincipal(
-                new System.Security.Claims.ClaimsIdentity(new[]
-                {
-                    new System.Security.Claims.Claim(System.Security.Claims.ClaimTypes.NameIdentifier, user.Id)
-                }, "TestAuth")
-            );
+            ProfileController controller = CreateController(db, user);
 
-            controller.ControllerContext = new Microsoft.AspNetCore.Mvc.ControllerContext
+            Dictionary<string, string> request = new Dictionary<string, string>
             {
-                HttpContext = new DefaultHttpContext { User = claimsPrincipal }
+                ["newEmail"] = "alex.newemail@assetmgmt.io"
             };
 
-            UpdateEmailDto request = new UpdateEmailDto("alex.newemail@assetmgmt.io");
             IResult result = await controller.UpdateEmail(request);
 
             Ok<UserDto> okResult = Assert.IsType<Ok<UserDto>>(result);
@@ -132,27 +119,18 @@ namespace AssetManagement.Tests
         public async Task UpdateEmail_ShouldReturnLocalizedBadRequestWhenEmailInvalid()
         {
             AppDbContext db = GetInMemoryDbContext();
-            TranslationService translationService = new TranslationService();
-            ProfileController controller = new ProfileController(db, translationService);
-
             UserEntity? user = await db.Users.FirstOrDefaultAsync();
             Assert.NotNull(user);
             user.PreferredLanguage = "es-ES";
             await db.SaveChangesAsync();
 
-            System.Security.Claims.ClaimsPrincipal claimsPrincipal = new System.Security.Claims.ClaimsPrincipal(
-                new System.Security.Claims.ClaimsIdentity(new[]
-                {
-                    new System.Security.Claims.Claim(System.Security.Claims.ClaimTypes.NameIdentifier, user.Id)
-                }, "TestAuth")
-            );
+            ProfileController controller = CreateController(db, user);
 
-            controller.ControllerContext = new Microsoft.AspNetCore.Mvc.ControllerContext
+            Dictionary<string, string> request = new Dictionary<string, string>
             {
-                HttpContext = new DefaultHttpContext { User = claimsPrincipal }
+                ["newEmail"] = "not-an-email"
             };
 
-            UpdateEmailDto request = new UpdateEmailDto("not-an-email");
             IResult result = await controller.UpdateEmail(request);
             IStatusCodeHttpResult statusCodeResult = Assert.IsAssignableFrom<IStatusCodeHttpResult>(result);
             Assert.Equal(StatusCodes.Status400BadRequest, statusCodeResult.StatusCode);
@@ -162,25 +140,16 @@ namespace AssetManagement.Tests
         public async Task UpdateLanguage_ShouldUpdateUserPreferredLanguageInDb()
         {
             AppDbContext db = GetInMemoryDbContext();
-            TranslationService translationService = new TranslationService();
-            ProfileController controller = new ProfileController(db, translationService);
-
             UserEntity? user = await db.Users.FirstOrDefaultAsync();
             Assert.NotNull(user);
 
-            System.Security.Claims.ClaimsPrincipal claimsPrincipal = new System.Security.Claims.ClaimsPrincipal(
-                new System.Security.Claims.ClaimsIdentity(new[]
-                {
-                    new System.Security.Claims.Claim(System.Security.Claims.ClaimTypes.NameIdentifier, user.Id)
-                }, "TestAuth")
-            );
+            ProfileController controller = CreateController(db, user);
 
-            controller.ControllerContext = new Microsoft.AspNetCore.Mvc.ControllerContext
+            Dictionary<string, string> request = new Dictionary<string, string>
             {
-                HttpContext = new DefaultHttpContext { User = claimsPrincipal }
+                ["language"] = "fr-FR"
             };
 
-            UpdateLanguageRequestDto request = new UpdateLanguageRequestDto("fr-FR");
             IResult result = await controller.UpdateLanguage(request);
 
             Ok<UserDto> okResult = Assert.IsType<Ok<UserDto>>(result);

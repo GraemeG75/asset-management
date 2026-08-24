@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using AssetManagement.Api.Controllers;
+using AssetManagement.Core.Dtos;
 using AssetManagement.Core.Models;
 using AssetManagement.Core.Services;
 using AssetManagement.Infrastructure.Services;

@@ -1,4 +1,6 @@
-namespace AssetManagement.Core.Models
+using System.Collections.Generic;
+
+namespace AssetManagement.Core.Dtos
 {
     public class GridConfigDto
     {

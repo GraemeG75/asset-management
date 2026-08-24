@@ -1,4 +1,6 @@
-namespace AssetManagement.Core.Models
+using System.Collections.Generic;
+
+namespace AssetManagement.Core.Dtos
 {
     public class FormFieldDto
     {
@@ -7,7 +9,8 @@ namespace AssetManagement.Core.Models
         public string Type { get; set; } = "text";
         public string? Placeholder { get; set; }
         public object? DefaultValue { get; set; }
-        public string? LabelPosition { get; set; }
+        public object? Value { get; set; }
+        public string LabelPosition { get; set; } = "top";
         public List<SelectOptionDto>? Options { get; set; }
         public List<FieldValidatorDto>? Validators { get; set; }
         public bool Disabled { get; set; }

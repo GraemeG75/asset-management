@@ -1,4 +1,4 @@
-namespace AssetManagement.Core.Models
+namespace AssetManagement.Core.Dtos
 {
     public class PageFormSummaryDto
     {

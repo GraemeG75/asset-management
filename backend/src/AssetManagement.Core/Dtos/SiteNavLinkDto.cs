@@ -1,4 +1,4 @@
-namespace AssetManagement.Core.Models
+namespace AssetManagement.Core.Dtos
 {
     public class SiteNavLinkDto
     {
@@ -7,7 +7,7 @@ namespace AssetManagement.Core.Models
         public string Icon { get; set; } = string.Empty;
         public string Route { get; set; } = string.Empty;
         public int? BadgeCount { get; set; }
-        public string Category { get; set; } = "Main";
+        public string Category { get; set; } = string.Empty;
         public int Order { get; set; }
         public bool IsActive { get; set; } = true;
     }

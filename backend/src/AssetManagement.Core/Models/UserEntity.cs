@@ -1,5 +1,6 @@
 using System;
 using System.ComponentModel.DataAnnotations.Schema;
+using AssetManagement.Core.Generated.PickLists;
 
 namespace AssetManagement.Core.Models
 {
@@ -24,7 +25,11 @@ namespace AssetManagement.Core.Models
             get
             {
                 string combined = $"{FirstName} {LastName}".Trim();
-                return string.IsNullOrWhiteSpace(combined) ? (Username.Length > 0 ? Username : (Email?.Split('@')[0] ?? "User")) : combined;
+                if (string.IsNullOrWhiteSpace(combined))
+                {
+                    return Username.Length > 0 ? Username : (Email?.Split('@')[0] ?? "User");
+                }
+                return combined;
             }
             set
             {
@@ -32,7 +37,14 @@ namespace AssetManagement.Core.Models
                 {
                     string[] parts = value.Trim().Split(' ', 2);
                     FirstName = parts[0];
-                    LastName = parts.Length > 1 ? parts[1] : string.Empty;
+                    if (parts.Length > 1)
+                    {
+                        LastName = parts[1];
+                    }
+                    else
+                    {
+                        LastName = string.Empty;
+                    }
                 }
             }
         }
@@ -44,10 +56,16 @@ namespace AssetManagement.Core.Models
         public string? PasswordHash { get; set; }
 
         [Column("role")]
-        public int Role { get; set; } = 4; // 1 = Admin, 2 = Manager, 3 = Compliance Officer, 4 = Standard User, 5 = Read Only
+        public int Role { get; set; } = (int)UserRolesEnum.StandardUser;
+
+        [NotMapped]
+        public UserRolesEnum RoleEnum => (UserRolesEnum)Role;
+
+        [NotMapped]
+        public string RoleName => UserRolesPickList.GetName(Role);
 
         [Column("provider")]
-        public string Provider { get; set; } = "local"; // local, google, azure, github
+        public string Provider { get; set; } = "local";
 
         [Column("avatar_url")]
         public string? AvatarUrl { get; set; }
